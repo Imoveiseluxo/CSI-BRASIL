@@ -112,6 +112,35 @@ para o usuário precisa ser genérica (segurança), o motivo real vai para o log
 | `docs/PENDENCIAS.md` | O que falta e o que espera decisão — **na hora em que aparece**, não no fim da conversa |
 | `docs/MAPA-DO-SISTEMA.md` | Processo novo ou processo que mudou de comportamento |
 
+### Regra permanente do dono (19/08/2026): registro a cada tarefa concluída
+
+**Toda tarefa concluída vira um registro em `docs/RELATORIO-ATIVIDADES.md` no momento em que
+termina** — não no fim da conversa, não "depois eu documento". É a mesma regra que vale no
+Bahia Realty desde 30/07/2026, e ela existe porque o que não é escrito na hora volta a ser
+descoberto por acaso, semanas depois.
+
+**Uma tarefa não está concluída sem o registro.** O registro é parte da entrega, como o teste
+é — não um passo seguinte.
+
+**O que cada registro precisa ter**, porque relatório que só diz "feito" não serve para nada:
+
+1. **O que foi feito**, em português que o dono entenda sem jargão.
+2. **O que foi medido** — o número, o comando, a resposta. *"Funcionou"* não é medição.
+3. **O que eu afirmei e estava errado**, se for o caso. Afirmação errada não corrigida custa
+   o tempo de quem age com base nela.
+4. **O que ficou aberto**, e por quê. Entrega parcial escrita é honesta; entrega parcial
+   silenciosa vira dívida invisível.
+5. **O que NÃO foi feito de propósito** — decisão registrada não é esquecimento. Quem ler
+   depois precisa saber a diferença.
+
+**A cópia espelhada:** a mesma versão vai para
+`C:\Users\Windows\Documents\RELATORIO COMPLETO CSI BRASIL.md`, como no Bahia Realty — para o
+dono ler sem precisar abrir o repositório.
+
+⚠️ **Verde não é registro.** *"Os testes passaram"* descreve o status; o registro precisa
+dizer **o que mudou no mundo**. No projeto anterior, `succeeded` no banco, HTTP 200 e teste
+verde já esconderam cliente sem atendimento, campanha queimando lead e e-mail que nunca saiu.
+
 ---
 
 ## Convenções

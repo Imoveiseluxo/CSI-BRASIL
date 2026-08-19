@@ -7,6 +7,35 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 20h45 — regra permanente: registro a cada tarefa concluída
+
+**Pedido do dono:** ter aqui a mesma regra de registro que existe no Bahia Realty.
+
+**O que estava fraco:** a regra existia, mas como **uma linha numa tabela**. No Bahia Realty
+ela é seção própria, com o porquê junto — e é por isso que lá ela pega. Regra escrita de
+passagem é regra que se cumpre de passagem.
+
+**O que entrou:**
+
+- `CLAUDE.md` ganhou a seção **"Regra permanente do dono: registro a cada tarefa concluída"**,
+  com as **cinco coisas** que todo registro precisa ter: o que foi feito · **o que foi
+  medido, com número** · o que eu afirmei e estava errado · o que ficou aberto · o que **não**
+  foi feito de propósito.
+- `docs/REGRAS-DE-EXECUCAO.md` passou a exigir o registro **dentro** da verificação
+  obrigatória — antes de a tarefa poder ser chamada de concluída, junto com tipos, testes e
+  build.
+- Combinada a **cópia espelhada** em `Documents\RELATORIO COMPLETO CSI BRASIL.md`, como no
+  Bahia Realty, para o dono ler sem abrir o repositório.
+
+**A frase que sustenta a regra:** ⚠️ *verde não é registro*. "Os testes passaram" descreve o
+status; o registro diz **o que mudou no mundo**. No outro projeto, `succeeded` no banco,
+HTTP 200 e teste verde já esconderam cliente sem atendimento, campanha queimando lead e
+e-mail que nunca saiu.
+
+**O que não mudou:** nenhuma linha de código. Isto é regra de processo.
+
+---
+
 ## 19/08/2026, 20h36 — banco decidido, e a primeira fonte quase
 
 **Duas decisões do dono:**

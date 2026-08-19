@@ -152,6 +152,11 @@ Depois: commit → push → **conferir que a publicação ficou pronta**.
 Se a mudança tem efeito visível, peça ao dono para abrir e validar, ou confirme você mesmo.
 **Não afirme "funciona" sem evidência.**
 
+**E, antes de chamar a tarefa de concluída: o registro.** Regra permanente do dono
+(19/08/2026) — toda tarefa concluída vira um parágrafo em `docs/RELATORIO-ATIVIDADES.md`
+**no momento em que termina**. Sem o registro, a tarefa não está concluída. Detalhe do que
+cada registro precisa conter está no `CLAUDE.md`, seção "Registro".
+
 ---
 
 ## Anti-padrões — proibido
@@ -173,9 +178,17 @@ Se a mudança tem efeito visível, peça ao dono para abrir e validar, ou confir
 
 | Documento | Quando |
 |---|---|
-| `docs/RELATORIO-ATIVIDADES.md` | **Toda** mudança, mais recente no topo. Atualizar **durante** a sessão |
+| `docs/RELATORIO-ATIVIDADES.md` | **A cada tarefa concluída**, no momento em que termina. Mais recente no topo. **Tarefa sem registro não está concluída** |
 | `docs/PENDENCIAS.md` | O que falta e o que espera decisão — **na hora em que aparece** |
 | `docs/MAPA-DO-SISTEMA.md` | Processo novo, ou processo que mudou de comportamento |
+| `Documents\RELATORIO COMPLETO CSI BRASIL.md` | Cópia espelhada do relatório, para o dono ler sem abrir o repositório |
+
+**Cinco coisas em cada registro** (detalhe no `CLAUDE.md`): o que foi feito · **o que foi
+medido**, com número · o que eu afirmei e estava errado · o que ficou aberto · o que **não**
+foi feito de propósito.
+
+⚠️ **Verde não é registro.** *"Os testes passaram"* é status. O registro diz o que mudou no
+mundo — que é a diferença entre saber que o código roda e saber que a pessoa foi atendida.
 
 ---
 
