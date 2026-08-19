@@ -7,6 +7,41 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 20h57 — correção: o acesso a CPF existe, via CDL
+
+**Corrijo uma afirmação minha de sete minutos atrás.** Escrevi que consulta de CPF *"ou é de
+acesso restrito com credencial própria, ou é comércio irregular de dado pessoal"*, tratando o
+primeiro caminho como se fosse exótico. **Não é.** O dono informou que existe **integração
+com a CDL** — que é exatamente a via legítima e contratada.
+
+**O que a correção muda:** a disponibilidade técnica. O caminho existe e é legítimo.
+
+**O que a correção NÃO muda, e é o ponto:** ter credencial responde *"eu consigo
+consultar?"*. A LGPD pergunta outra coisa: *"por que, com que finalidade, com que
+minimização, por quanto tempo, e como o titular exerce direitos?"* — e o book exige
+exatamente isso, **registrado por conector**, antes da primeira linha.
+
+⚠️ **E aqui há um risco específico deste caso, que é o mais provável de morder na prática.**
+Credencial de birô (CDL/SPC) é contratada **para uma finalidade** — tipicamente análise de
+crédito e consulta cadastral, dentro de uma relação em que o consultado é parte. Usar essa
+mesma credencial para alimentar um produto de inteligência corporativa é **finalidade
+diferente da contratada**: é o que a LGPD chama de finalidade incompatível, e o que costuma
+estar vedado no próprio contrato do birô. **A consequência prática não é só jurídica — é o
+tipo de uso que faz a credencial ser revogada.**
+
+**Próximo passo, e é de leitura, não de código:** ler a cláusula de finalidade / uso
+permitido do contrato com a CDL e transcrever na pendência 18 o que ela autoriza. Isso decide
+se CPF entra no roadmap, com qual finalidade declarada, ou se fica fora.
+
+**O que não muda de qualquer forma:** a **ordem**. CNPJ continua sendo o primeiro conector,
+pelo argumento técnico — chave canônica e procedência sem ambiguidade —, que independe de
+haver ou não acesso a CPF.
+
+⚠️ **A mensagem do dono chegou cortada** (*"temos integração com a CDL e"*). O que vem depois
+do "e" pode mudar esta análise, e está pendente.
+
+---
+
 ## 19/08/2026, 20h50 — CNPJ é a primeira fonte; CPF fica fora, e e-mail fica depois
 
 **Decisão do dono:** CNPJ primeiro. Pediu que ficasse registrado **por que não pode ser CPF
