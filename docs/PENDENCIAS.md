@@ -6,16 +6,20 @@
 > **Item novo entra na hora em que aparece** — não no fim da conversa. O que não está escrito
 > num lugar só volta a ser descoberto por acaso, semanas depois.
 
-**Atualizado em:** 19/08/2026, 01h
+**Atualizado em:** 19/08/2026, 01h10
+
+---
+
+## ✅ Decidido pelo dono em 19/08/2026, 01h04
+
+| O quê | Decisão | O que isso trava |
+|---|---|---|
+| **Modelo de negócio** | **Plataforma que o dono opera**, vendendo acesso | **Multi-tenancy é obrigatória desde a primeira tabela.** `organization_id` + RLS em toda tabela de domínio, sem exceção. Também libera juridicamente usar o `elite-programa` como referência — a licença da Awave permite faturar com o serviço |
+| **Domínio** | **Inteligência corporativa brasileira** | Os conectores da Fase 2 e 4 são brasileiros: CNPJ, PNCP e CVM prioritários, conforme o book. O protótipo de geopolítica entra só como **desenho de tela**, não como escopo |
 
 ---
 
 ## 🔴 Esperando decisão sua
-
-| # | O quê | O que eu preciso de você |
-|---|---|---|
-| **1** | 🔴 **O CSI Brasil é produto para vender, plataforma que você opera, ou ferramenta interna?** | **É a decisão que trava todas as outras.** Se for **plataforma que você opera** e vende acesso, multi-tenancy é obrigatória desde a primeira tabela. Se for **produto que o cliente instala**, muda o modelo inteiro e some a multi-tenancy. Se for **ferramenta interna**, o MVP encolhe bastante e várias fases saem. Sem essa resposta, qualquer tabela que eu criar tem chance de estar errada |
-| **2** | 🔴 **Inteligência corporativa brasileira ou geopolítica internacional?** | O book descreve inteligência corporativa do Brasil — CNPJ, PNCP, CVM, risco de empresa. O protótipo `geopolitics-live-stream` é geopolítica internacional. Os **motores** servem aos dois; as **fontes e as regras de negócio**, não. Escolher define quais conectores nascem na Fase 2 |
 | **3** | **Banco: começar só com PostgreSQL, ou já montar a pilha completa do book?** | Recomendo PostgreSQL + pgvector no MVP (ver `docs/ROADMAP.md`). A pilha completa — OpenSearch, ClickHouse, Neo4j, Kafka, Temporal — são sete peças para operar antes de existir um usuário. Preciso do seu de acordo para seguir pelo caminho simples |
 | **4** | **Qual é a primeira fonte real?** | A Fase 2 começa com **um** conector. Escolher qual define o resto: um feed RSS de agência é o mais simples e já prova o caminho inteiro. Se você tiver uma fonte que interessa comercialmente mais, ela vem primeiro |
 | **5** | **De onde vem a base do código?** | A auditoria comparativa recomendou extrair o encanamento do Bahia Realty (multi-tenancy, autenticação, rotinas, LGPD) em vez de começar do zero ou clonar. Isso precisa do seu de acordo, porque significa **extrair arquivo por arquivo**, não clonar e apagar — mais lento no primeiro dia, e evita as sobras que já causaram estrago lá |

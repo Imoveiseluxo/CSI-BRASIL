@@ -7,6 +7,40 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 01h10 — as duas decisões que destravaram a Fase 1
+
+**O dono decidiu, e as duas respostas mudam o modelo de dados:**
+
+1. **O CSI Brasil é uma plataforma que ele opera**, vendendo acesso — não é software
+   entregue ao cliente. Consequência dura: **multi-tenancy desde a primeira tabela**.
+2. **O domínio é inteligência corporativa brasileira** — CNPJ, PNCP e CVM prioritários. O
+   protótipo de geopolítica entra só como desenho de tela.
+
+Uma consequência lateral que vale registrar: como o produto é **serviço operado**, a licença
+do `elite-programa` deixa de ser impeditiva — ela permite faturar com o serviço. A
+recomendação técnica não muda (base extraída do Bahia Realty, `elite-programa` só como
+referência de desenho), mas a porta jurídica que estava fechada agora está aberta.
+
+**Escrito em seguida:** `docs/superpowers/plans/2026-08-19-fase-1-core-multi-tenant.md` — 5
+tarefas com SQL e TypeScript prontos:
+
+1. **A trava primeiro**, antes de qualquer tabela: um teste que lê as migrations e reprova
+   tabela sem `organization_id`, sem RLS, ou com `FORCE ROW LEVEL SECURITY`. Regra que nasce
+   depois da primeira violação já nasceu tarde.
+2. Organizações, membros e os helpers `is_org_member` / `has_org_role` — com os dois
+   ingredientes que evitam recursão infinita (`security definer` **e** `row_security = off`).
+3. A matriz de papéis em lógica pura, testável sem banco, com **negar como padrão**.
+4. Projetos — a primeira tabela de domínio, que serve de molde para todas as outras.
+5. Monitores e versões de consulta, com **histórico imutável** de propósito: versão que pode
+   ser reescrita não é histórico, e mudança de resultado seria atribuída ao mundo quando foi
+   ao operador.
+
+⚠️ Cada tarefa que aplica migration tem passo de **conferir no banco**, não de presumir. E o
+passo do monitor avisa explicitamente que UPDATE que casa zero linhas **não devolve erro** —
+é preciso contar as linhas afetadas.
+
+---
+
 ## 19/08/2026, 01h — a fundação documental, antes de existir código
 
 **Pedido do dono:** replicar para o CSI Brasil os documentos de método do Bahia Realty e

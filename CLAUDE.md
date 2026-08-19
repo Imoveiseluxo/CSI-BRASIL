@@ -9,6 +9,14 @@ Monitora fontes autorizadas e públicas, transforma conteúdo em dado estruturad
 entidades, identifica relações, agrupa eventos, mede risco e oportunidade, e **entrega
 evidência rastreável para decisão**.
 
+**Duas decisões do dono, tomadas em 19/08/2026, que valem para tudo daqui em diante:**
+
+1. **É uma plataforma que o dono OPERA**, vendendo acesso — não é software entregue ao
+   cliente. Consequência dura: **multi-tenancy desde a primeira tabela**, `organization_id` +
+   RLS sem exceção.
+2. **O domínio é inteligência corporativa BRASILEIRA** — CNPJ, PNCP e CVM prioritários. Não é
+   geopolítica internacional.
+
 - **Especificação:** `docs/spec/BOOK-CSI-BRASIL.md` (Book v1.0, 18/08/2026). O PDF original é a fonte autoritativa.
 - **Roadmap:** `docs/ROADMAP.md` — 11 fases (0 a 10), com o recorte do MVP vendável.
 - **Repositório:** `Imoveiseluxo/CSI-BRASIL`
