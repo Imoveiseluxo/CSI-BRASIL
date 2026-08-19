@@ -7,6 +7,57 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 20h30 — a base extraída do Bahia Realty, arquivo por arquivo
+
+**Decisão do dono:** extrair, com uma condição dura — *"isso não pode prejudicar em nada o
+projeto Bahia Realty"*.
+
+**A condição virou medição, não promessa.** Antes de começar, gravei a linha de base do
+outro projeto: `HEAD 0648db2`, branch `main`, zero arquivos modificados. Trabalhei **só
+lendo** de lá. Ao terminar, conferi: **mesmo commit, zero alterações, nenhum commit novo**.
+
+**O que veio, e por quê:**
+
+| Arquivo | Decisão |
+|---|---|
+| `package.json` | **6 dependências**, não as 40 de lá. Sem SDK de IA, sem gráficos, sem e-mail, sem arrastar-e-soltar — nada que a Fase 1 não use |
+| `tsconfig.json` · `biome.json` · `vitest.config.ts` | Extraídos quase inteiros: são a régua, e a régua boa é a mesma |
+| `tests/stubs/server-only.ts` | Extraído com o motivo junto: sem ele, o `import "server-only"` derruba todo teste que toque no cliente de serviço |
+| `lib/supabase/server.ts` · `service.ts` | Extraídos. O `import "server-only"` veio junto — é ele que **quebra o build** se um componente de navegador importar a chave que ignora RLS |
+| `lib/logger.ts` | Extraído **com o limite escrito**: ele não imprime `cause`, e foi isso que escondeu por dois dias a causa de 63 falhas de envio no outro projeto |
+| `lib/auth/permissions.ts` | **Adaptado.** Quatro papéis (`owner`, `admin`, `analyst`, `viewer`) em vez dos seis de lá — papel só entra quando existe tela que ele precisa e outra que não pode ver |
+| `lib/auth/guards.ts` · `lib/orgs/queries.ts` | Adaptados às rotas e papéis daqui |
+
+**⚠️ Uma sobra de molde interceptada antes de entrar.** O `.gitignore` do Bahia Realty
+ignora `docs/superpowers/` — lá os planos são artefato descartável. **Aqui os planos das
+Fases 0 e 1 são a especificação executável e estão versionados.** Copiar aquela linha faria
+o repositório parar de rastrear os dois planos, sem erro e sem aviso. O `.gitignore` daqui
+tem o motivo escrito no lugar da linha, para ninguém "corrigir" isso depois.
+
+**⚠️ O que NÃO foi extraído, de propósito:** `requireMfaSatisfied`. Ele redireciona para uma
+tela `/mfa` que aqui não existe, e guarda apontando para página inexistente é pior que guarda
+nenhuma. Virou a pendência **15** — registrado, não esquecido.
+
+**⚠️ Uma dívida assumida às claras:** `types/supabase.ts` é um **esboço escrito à mão**,
+porque o banco ainda não existe. Ele não descreve o banco: descreve o que o código espera
+dele. Como o esboço não modela relacionamentos, as duas consultas com `join` usam
+`.returns<>()` — **asserção declarada e comentada**, não inferência. No dia em que o arquivo
+for gerado do banco, o `.returns<>()` sai e o tipo inferido precisa bater. Se não bater, o
+código está errado, e aquele comentário será a única pista.
+
+**O primeiro teste de verdade:** `tests/permissoes.test.ts`, 7 casos sobre a matriz de
+papéis — lógica pura, sem banco. O mais importante deles é *"seção desconhecida é recusada,
+não liberada"*: **negar é o padrão**. Quebrei `canAccess` de propósito para devolver `true`
+no desconhecido e vi **exatamente esse** teste ficar vermelho, sozinho, antes de restaurar.
+
+**Verificação:** `tsc --noEmit` 0 erros · **7 testes verdes** · `biome check` limpo ·
+`next build` completo.
+
+**O que isto NÃO é:** ainda não há banco, migration aplicada, tela de workspace nem
+autenticação configurada. A Fase 1 continua dependendo das decisões 2, 3 e 4.
+
+---
+
 ## 19/08/2026, 20h — plano da Fase 1 revisado com a regra de rastreabilidade
 
 **A conclusão da revisão é mais estreita do que o problema parecia, e isso é o resultado.**

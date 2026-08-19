@@ -146,13 +146,37 @@ política de repetição.
 
 ## 9. Inventário de `lib/`
 
-_Vazio — preenchido conforme as áreas nascem._
+| Área | O que faz | Origem |
+|---|---|---|
+| `lib/supabase/server.ts` | Cliente do **usuário logado** — respeita RLS. É este que vale em toda leitura de dado de domínio | extraído do Bahia Realty, 19/08/2026 |
+| `lib/supabase/service.ts` | Cliente com papel de serviço — **ignora RLS**. Só rotina de servidor. Tem `import "server-only"`, que **quebra o build** se um componente de navegador importar | extraído, 19/08/2026 |
+| `lib/logger.ts` | Log de erro sem vazar `details`/`hint` do provedor | extraído, 19/08/2026 |
+| `lib/auth/permissions.ts` | A **matriz de papéis**, lógica pura, testável sem banco. Fonte única | adaptado, 19/08/2026 |
+| `lib/auth/guards.ts` | `requireUser`, `requireOrgMember`, `requireOrgRole`, `requireSection` | adaptado, 19/08/2026 |
+| `lib/orgs/queries.ts` | Vínculo da pessoa com a organização | adaptado, 19/08/2026 |
 
 ---
 
 ## 10. As guardas de acesso
 
-_Vazio — nascem na Fase 1, junto com workspace e RBAC._
+| Guarda | Pergunta que ela faz |
+|---|---|
+| `requireUser` | "tem sessão?" |
+| `requireOrgMember` | "pertence a esta organização?" — **o piso** |
+| `requireOrgRole` | "tem um destes papéis?" — use só quando a regra for de papel |
+| `requireSection` | "o papel dela libera ESTA seção?" — pela matriz central. **Prefira esta** |
+
+⚠️ **As guardas são a SEGUNDA camada, não a primeira.** Quem impede um dado de
+vazar é a RLS, no banco. As guardas decidem o que a pessoa vê na navegação. No
+projeto anterior, a tela de leads é guardada só pelo piso — porque quem separa um
+corretor do outro é a RLS —, e quem lesse só a guarda concluiria que a tela estava
+aberta.
+
+⚠️ **O que NÃO foi extraído, de propósito:** o Bahia Realty tem
+`requireMfaSatisfied`, que força o segundo fator antes de entrar. Ele não veio
+porque redireciona para uma tela `/mfa` que aqui não existe — e guarda que aponta
+para página inexistente é pior que guarda nenhuma. **Fica registrado como
+pendência**, não como esquecimento.
 
 ---
 

@@ -10,6 +10,14 @@
 
 ---
 
+## ✅ Decidido pelo dono em 19/08/2026, 20h20
+
+| O quê | Decisão | O que isso destravou |
+|---|---|---|
+| **De onde vem a base do código** (era o item 5) | **Extrair do Bahia Realty, arquivo por arquivo**, com a condição dura de **não prejudicar aquele projeto em nada** | Feito e verificado: o Bahia Realty terminou no **mesmo commit** (`0648db2`), com **zero arquivos modificados** — trabalhei só lendo. O esqueleto e o encanamento de acesso do CSI existem, com `tsc` limpo, 7 testes verdes, lint limpo e build passando |
+
+---
+
 ## ✅ Decidido pelo dono em 19/08/2026, 01h04
 
 | O quê | Decisão | O que isso trava |
@@ -26,7 +34,7 @@
 | **2** | 🆕 **O produto é só operado por você, ou também instalado no cliente?** (levantado pelo **Book v2**, 19/08/2026) | Em 19/08 às 01h04 você decidiu "plataforma que eu opero, vendendo acesso" — e foi **essa** decisão que abriu a porta jurídica para usar o `elite-programa` como referência, porque a licença da Awave permite faturar com o **serviço**, não com o software. **O Book v2 acrescentou uma opção de `on-premise` / *Enterprise deployment*** ("atender organizações que exigem isolamento, dados locais ou rede privada"). As duas coisas não convivem sem consequência: se o CSI Brasil for instalado no cliente, ele vira **software entregue**, e a porta jurídica que estava aberta fecha de novo. ⚠️ Isso não é detalhe de fase 10 — muda o que pode ser usado como referência **agora**, na Fase 1 |
 | **3** | **Banco: começar só com PostgreSQL, ou já montar a pilha completa do book?** | Recomendo PostgreSQL + pgvector no MVP (ver `docs/ROADMAP.md`). A pilha completa — OpenSearch, ClickHouse, Neo4j, Kafka, Temporal — são sete peças para operar antes de existir um usuário. Preciso do seu de acordo para seguir pelo caminho simples |
 | **4** | **Qual é a primeira fonte real?** | A Fase 2 começa com **um** conector. Escolher qual define o resto: um feed RSS de agência é o mais simples e já prova o caminho inteiro. Se você tiver uma fonte que interessa comercialmente mais, ela vem primeiro |
-| **5** | **De onde vem a base do código?** | A auditoria comparativa recomendou extrair o encanamento do Bahia Realty (multi-tenancy, autenticação, rotinas, LGPD) em vez de começar do zero ou clonar. Isso precisa do seu de acordo, porque significa **extrair arquivo por arquivo**, não clonar e apagar — mais lento no primeiro dia, e evita as sobras que já causaram estrago lá |
+| **15** | 🆕 **`requireMfaSatisfied` não foi extraído** (19/08/2026) | O Bahia Realty força o segundo fator antes de entrar no app. Não veio porque redireciona para uma tela `/mfa` que aqui não existe, e guarda apontando para página inexistente é pior que guarda nenhuma. **Entra junto com a tela de MFA**, na fase de autenticação. Registrado para não virar esquecimento |
 
 ---
 

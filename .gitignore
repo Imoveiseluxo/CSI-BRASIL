@@ -1,0 +1,44 @@
+# dependências
+/node_modules
+/.pnp
+.pnp.*
+
+# testes
+/coverage
+
+# next.js
+/.next/
+/out/
+/build
+
+# diversos
+.DS_Store
+*.pem
+
+# depuração
+npm-debug.log*
+yarn-debug.log*
+.pnpm-debug.log*
+
+# variáveis de ambiente — nunca versionadas
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# configuração local do Claude Code (por usuário, não vai pro repo)
+.claude/settings.local.json
+
+# cache local da CLI do Supabase
+supabase/.temp/
+
+# ⚠️ NÃO ignorar `docs/superpowers/`.
+# No Bahia Realty essa linha existe porque lá os planos são artefato de
+# processo descartável. Aqui os planos das Fases 0 e 1 SÃO a especificação
+# executável e estão versionados de propósito. Copiar aquela linha faria o
+# repositório parar de rastrear os dois planos — sem erro, sem aviso.
