@@ -36,6 +36,36 @@ User, Role, Permission, Project, Monitor, QueryVersion) e seção 20 (segurança
 - **TypeScript strict**, nunca `any`. **PT-BR** em interface e documentação, **inglês** em código.
 - **Teste visto vermelho de propósito** antes de a tarefa ser dada por concluída.
 - **Mapa atualizado na mesma tarefa.**
+- 🆕 **Rastreabilidade (Book v2, 19/08/2026).** Regra escrita em caixa alta no book: *"o
+  grafo não é decoração. Cada nó e cada aresta devem ser rastreáveis a evidência, fonte,
+  Transform, usuário/agente responsável, data e nível de confiança."* Toda tabela que guarde
+  **conhecimento derivado** — entidade, relação, fato extraído, evento, evidência — nasce com
+  o conjunto de colunas de procedência da Tarefa 1b. **Toda migration declara a classe da
+  tabela**, e a trava reprova quem não declarar.
+
+---
+
+## ⚠️ Revisão de 19/08/2026 — o que o Book v2 mudou neste plano
+
+Este plano foi escrito sobre o **Book v1**. O v2 acrescentou o **Investigation Engine** e a
+regra de rastreabilidade acima. A revisão foi feita, e a conclusão é mais estreita do que
+parece à primeira vista:
+
+**As cinco tabelas desta fase NÃO recebem colunas de procedência** — e isso é decisão, não
+esquecimento. `organizations`, `memberships`, `projects`, `monitors` e `query_versions` são
+**configuração de trabalho**: elas registram o que o operador pediu, não o que o sistema
+descobriu no mundo. Não são nó, aresta nem fato extraído. Pôr `fonte`, `evidência` e
+`confiança` nelas encheria o banco de coluna nula que ninguém escreve — que é exatamente o
+**risco 13** desta lista (*"campo que ninguém preenche"*), e foi o erro que no projeto
+anterior deixou painéis e alertas pendurados em campos mortos.
+
+**O que a regra exige desta fase é o contrato e a trava**, pelo mesmo motivo que a Tarefa 1
+existe: *regra que nasce depois da primeira violação já nasceu tarde*. A primeira tabela de
+conhecimento aparece na Fase 2 (documentos coletados) e a Fase 7 inteira depende disso. Se o
+molde não existir antes, ele nasce por improviso na pressa do primeiro conector.
+
+Por isso a revisão acrescenta **uma tarefa** (1b) e marca a classe das tabelas nas Tarefas 4
+e 5. Nada mais muda.
 
 ---
 
@@ -52,6 +82,8 @@ User, Role, Permission, Project, Monitor, QueryVersion) e seção 20 (segurança
 | `lib/projects/queries.ts` · `lib/projects/actions.ts` | projetos |
 | `lib/monitors/queries.ts` · `lib/monitors/actions.ts` | monitores |
 | `tests/toda-tabela-e-multi-tenant.test.ts` | **a trava**: nenhuma tabela sem `organization_id` e RLS |
+| `tests/rastreabilidade-do-conhecimento.test.ts` | 🆕 **a segunda trava**: tabela de conhecimento sem procedência não entra |
+| `docs/CONTRATO-DE-PROCEDENCIA.md` | 🆕 o conjunto de colunas obrigatório, e o que cada uma responde |
 | `tests/permissoes.test.ts` | a matriz de papéis |
 
 ---
@@ -179,6 +211,235 @@ git commit -m "test: trava que impede tabela nascer sem organization_id e RLS"
 
 ---
 
+### Tarefa 1b: A trava da rastreabilidade 🆕
+
+**Também antes de existir qualquer tabela.** Mesmo argumento da Tarefa 1: a primeira tabela
+de conhecimento nasce na Fase 2, e um molde que só é inventado na pressa do primeiro conector
+nasce torto.
+
+**Arquivos:**
+- Criar: `docs/CONTRATO-DE-PROCEDENCIA.md`
+- Criar: `tests/rastreabilidade-do-conhecimento.test.ts`
+
+**Interfaces:**
+- Consome: nada.
+- Produz: a garantia de que toda tabela **declara sua classe**, e que tabela de conhecimento
+  carrega as colunas que respondem *de onde veio isto*.
+
+- [ ] **Passo 1: escrever o contrato**
+
+`docs/CONTRATO-DE-PROCEDENCIA.md`:
+
+```markdown
+# Contrato de procedência
+
+O Book v2 escreve como regra de projeto: *"o grafo não é decoração. Cada nó e cada aresta
+devem ser rastreáveis a evidência, fonte, Transform, usuário/agente responsável, data e
+nível de confiança."*
+
+## Duas classes de tabela, declaradas explicitamente
+
+Toda migration que cria tabela declara a classe numa linha de comentário **acima** do
+`create table`:
+
+    -- @classe: configuracao
+    -- @classe: conhecimento
+
+**`configuracao`** — registra o que o operador pediu: organizações, membros, projetos,
+monitores, versões de consulta, preferências. Não descreve o mundo, descreve o nosso
+próprio sistema.
+
+**`conhecimento`** — registra o que o sistema descobriu ou derivou de uma fonte: documento
+coletado, entidade, relação, fato extraído, evento, evidência, resultado de Transform.
+
+⚠️ **Não existe terceira opção, e não existe tabela sem classe.** Deixar em branco não é
+neutro: é a forma mais comum de uma tabela de conhecimento passar batida. A trava reprova.
+
+⚠️ **Na dúvida, é `conhecimento`.** O custo de errar para esse lado são colunas a mais numa
+tabela; o custo de errar para o outro é descobrir na Fase 7 que nada é rastreável.
+
+## As colunas obrigatórias em `conhecimento`
+
+| Coluna | Pergunta que responde | Tipo |
+|---|---|---|
+| `source_id` | De qual **fonte** veio? | `uuid` (referência) |
+| `evidence_id` | Qual **artefato guardado** sustenta isto? | `uuid` (referência) |
+| `transform_id` | Qual **operação** produziu isto? `null` = coleta direta | `uuid` (referência) |
+| `produced_by_kind` | **Humano, agente ou rotina?** | `text` com CHECK |
+| `produced_by` | **Quem**, nominalmente | `uuid` (usuário ou agente) |
+| `produced_at` | **Quando** | `timestamptz` |
+| `confidence` | **Quanto se confia**, de 0 a 1 | `numeric(3,2)` com CHECK |
+
+⚠️ **`produced_by_kind` existe separado de `produced_by` de propósito.** Sem ele, "quem
+afirmou isto" some no dia em que um agente e uma pessoa tiverem id do mesmo formato — e a
+diferença entre um humano ter afirmado e um modelo ter inferido é justamente o que dá ou
+tira valor de uma evidência.
+
+⚠️ **`confidence` não pode ser `not null` com default.** Valor padrão inventado vira número
+na tela que ninguém escreveu — o risco 13 desta lista. Ou o produtor sabe a confiança e
+escreve, ou a coluna fica nula e a tela mostra "não informado".
+
+## O que este contrato NÃO cobre ainda
+
+Imutabilidade de evidência (nada de UPDATE/DELETE em tabela de evidência), o
+`Transform Registry` e o `Provenance Graph` são da Fase 7. Este contrato garante que os
+campos existam desde a primeira linha, para que a Fase 7 tenha o que ligar.
+```
+
+- [ ] **Passo 2: escrever o teste**
+
+`tests/rastreabilidade-do-conhecimento.test.ts`:
+
+```ts
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, test } from "vitest";
+
+/**
+ * Segunda trava do projeto (Book v2): tabela que guarda conhecimento derivado
+ * precisa dizer de onde aquilo veio.
+ *
+ * ⚠️ A trava age sobre a DECLARAÇÃO, não sobre adivinhação de nome. Um teste que
+ * tentasse deduzir a classe pelo nome da tabela erraria nos dois sentidos e daria
+ * falsa segurança — pior que não ter trava.
+ *
+ * ⚠️ Limite conhecido: a leitura é por expressão regular sobre o SQL, e associa a
+ * declaração ao `create table` MAIS PRÓXIMO abaixo dela. Ela não entende SQL de
+ * verdade. Por isso o passo "provar que a trava morde" tem quatro casos, e é ele
+ * — não a leitura deste código — que prova que a trava funciona.
+ */
+const DIR = join(process.cwd(), "supabase/migrations");
+
+const COLUNAS_DE_PROCEDENCIA = [
+  "source_id",
+  "evidence_id",
+  "transform_id",
+  "produced_by_kind",
+  "produced_by",
+  "produced_at",
+  "confidence",
+] as const;
+
+type Tabela = { arquivo: string; nome: string; classe: string | null; corpo: string };
+
+function migrations(): { arquivo: string; sql: string }[] {
+  if (!existsSync(DIR)) return [];
+  return readdirSync(DIR)
+    .filter((f) => f.endsWith(".sql"))
+    .sort()
+    .map((f) => ({ arquivo: f, sql: readFileSync(join(DIR, f), "utf8") }));
+}
+
+/**
+ * Cada `create table` com a classe declarada acima dele e o corpo entre parênteses.
+ * A classe vale para o PRÓXIMO create table — declarar uma vez no topo do arquivo
+ * não classifica as tabelas seguintes, de propósito.
+ */
+function tabelas(sql: string, arquivo: string): Tabela[] {
+  const achados: Tabela[] = [];
+  const re =
+    /(?:--\s*@classe:\s*(\w+)\s*\n(?:[^\n]*\n)*?)?create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?["']?([a-z_0-9]+)["']?\s*\(([\s\S]*?)\n\)\s*;/gi;
+  for (const m of sql.matchAll(re)) {
+    achados.push({
+      arquivo,
+      classe: (m[1] ?? null) as string | null,
+      nome: m[2] as string,
+      corpo: m[3] as string,
+    });
+  }
+  return achados;
+}
+
+function todas(): Tabela[] {
+  return migrations().flatMap(({ arquivo, sql }) => tabelas(sql, arquivo));
+}
+
+describe("rastreabilidade do conhecimento", () => {
+  test("toda tabela declara a classe", () => {
+    const semClasse = todas()
+      .filter((t) => t.classe === null)
+      .map((t) => `${t.arquivo}:${t.nome}`);
+    expect(
+      semClasse,
+      `tabelas sem "-- @classe:" acima do create table: ${semClasse.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  test("a classe declarada é uma das duas conhecidas", () => {
+    const invalidas = todas()
+      .filter((t) => t.classe !== null && t.classe !== "configuracao" && t.classe !== "conhecimento")
+      .map((t) => `${t.arquivo}:${t.nome}=${t.classe}`);
+    expect(invalidas, `classe desconhecida: ${invalidas.join(", ")}`).toEqual([]);
+  });
+
+  test("tabela de conhecimento carrega as colunas de procedência", () => {
+    const faltando: string[] = [];
+    for (const t of todas()) {
+      if (t.classe !== "conhecimento") continue;
+      for (const coluna of COLUNAS_DE_PROCEDENCIA) {
+        if (!new RegExp(`\\b${coluna}\\b`).test(t.corpo)) {
+          faltando.push(`${t.arquivo}:${t.nome} sem ${coluna}`);
+        }
+      }
+    }
+    expect(faltando, faltando.join(" | ")).toEqual([]);
+  });
+
+  test("confidence não nasce com default — número inventado vira número na tela", () => {
+    const culpadas: string[] = [];
+    for (const t of todas()) {
+      if (t.classe !== "conhecimento") continue;
+      const linha = t.corpo.split("\n").find((l) => /\bconfidence\b/.test(l)) ?? "";
+      if (/default/i.test(linha) || /not\s+null/i.test(linha)) {
+        culpadas.push(`${t.arquivo}:${t.nome}`);
+      }
+    }
+    expect(
+      culpadas,
+      `confidence com default ou not null: ${culpadas.join(", ")}`,
+    ).toEqual([]);
+  });
+});
+```
+
+- [ ] **Passo 3: provar que a trava morde — os quatro casos**
+
+⚠️ **Passa vazio não prova nada.** Criar `supabase/migrations/9999_teste_da_trava.sql` e
+rodar **uma vez para cada caso**, conferindo que falha o teste certo:
+
+| Conteúdo do arquivo | Deve falhar em |
+|---|---|
+| `create table public.a (id uuid primary key);` sem comentário | "toda tabela declara a classe" |
+| `-- @classe: qualquer` acima | "a classe declarada é uma das duas" |
+| `-- @classe: conhecimento` com só `id` e `organization_id` | "carrega as colunas de procedência" (7 faltas) |
+| `-- @classe: conhecimento` completa, mas `confidence numeric(3,2) not null default 1` | "confidence não nasce com default" |
+
+⚠️ O quarto caso é o que mais importa: `default 1` é o jeito mais natural de escrever, e
+produz exatamente o campo que ninguém preencheu com um número que parece medido.
+
+- [ ] **Passo 4: apagar o arquivo de teste**
+
+```bash
+rm supabase/migrations/9999_teste_da_trava.sql
+```
+
+Rodar de novo — esperado: PASSA.
+
+- [ ] **Passo 5: registrar no mapa**
+
+Na seção 3 (`As travas que protegem a evidência`), acrescentar a linha da trava com **o que
+ela cobre e o que não cobre**: cobre migration que entra no repositório; **não** cobre o
+estado do banco, nem garante que alguém escreva nas colunas. Quem preenche é a Fase 2.
+
+- [ ] **Passo 6: commit**
+
+```bash
+git add docs/CONTRATO-DE-PROCEDENCIA.md tests/rastreabilidade-do-conhecimento.test.ts docs/MAPA-DO-SISTEMA.md
+git commit -m "test: trava de procedencia — tabela de conhecimento diz de onde veio"
+```
+
+---
+
 ### Tarefa 2: Organizações, membros e os helpers de acesso
 
 **Arquivos:**
@@ -202,6 +463,7 @@ git commit -m "test: trava que impede tabela nascer sem organization_id e RLS"
 -- acesso. Logo, tenant é a primeira entidade do modelo, como o book manda, e
 -- toda tabela de domínio daqui em diante carrega organization_id + RLS.
 
+-- @classe: configuracao
 create table public.organizations (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
@@ -210,6 +472,7 @@ create table public.organizations (
 );
 alter table public.organizations enable row level security;
 
+-- @classe: configuracao
 create table public.memberships (
   id              uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -431,6 +694,9 @@ git commit -m "feat(auth): matriz de papeis, com negar como padrao"
 -- Projeto: o contexto de trabalho dentro de uma organização (seção 17 do book).
 -- Esta é a PRIMEIRA tabela de domínio, e serve de molde para todas as outras.
 
+-- @classe: configuracao
+-- Projeto é o que o operador organizou, não o que o sistema descobriu no mundo —
+-- por isso NÃO leva colunas de procedência. Ver docs/CONTRATO-DE-PROCEDENCIA.md.
 create table public.projects (
   id              uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -456,8 +722,9 @@ create index on public.projects (organization_id, created_at desc);
 
 - [ ] **Passo 2: rodar a trava**
 
-Rodar: `npx vitest run tests/toda-tabela-e-multi-tenant.test.ts`
-Esperado: PASSA.
+Rodar: `npx vitest run tests/toda-tabela-e-multi-tenant.test.ts tests/rastreabilidade-do-conhecimento.test.ts`
+Esperado: PASSA nas **duas** travas — tem `organization_id`, tem RLS, e declara
+`@classe: configuracao`.
 
 - [ ] **Passo 3: aplicar e conferir que a RLS realmente corta**
 
@@ -510,6 +777,7 @@ consulta mudou** — senão a mudança no resultado é atribuída ao mundo quand
 -- Cada alteração na consulta vira uma VERSÃO nova, nunca uma sobrescrita:
 -- sem isso, mudança de resultado é atribuída ao mundo quando foi ao operador.
 
+-- @classe: configuracao
 create table public.monitors (
   id              uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -521,6 +789,10 @@ create table public.monitors (
 );
 alter table public.monitors enable row level security;
 
+-- @classe: configuracao
+-- ⚠️ Fronteira sutil: query_versions é histórico do que o OPERADOR pediu, não do
+-- que o mundo respondeu. O RESULTADO da consulta, que a Fase 2 vai guardar, é
+-- `conhecimento` e leva procedência. Confundir os dois é o erro fácil aqui.
 create table public.query_versions (
   id              uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -559,8 +831,9 @@ create index on public.query_versions (monitor_id, version desc);
 
 - [ ] **Passo 2: rodar a trava**
 
-Rodar: `npx vitest run tests/toda-tabela-e-multi-tenant.test.ts`
-Esperado: PASSA — as duas tabelas têm `organization_id` e RLS.
+Rodar: `npx vitest run tests/toda-tabela-e-multi-tenant.test.ts tests/rastreabilidade-do-conhecimento.test.ts`
+Esperado: PASSA nas duas travas — as duas tabelas têm `organization_id`, RLS e classe
+declarada.
 
 - [ ] **Passo 3: conferir que versão não pode ser reescrita**
 
@@ -596,3 +869,14 @@ existir.
 
 A Fase 2 começa com **um** conector real. Pela decisão do domínio (inteligência corporativa
 brasileira), o candidato natural é a fonte pública de CNPJ ou o PNCP — item 4 das pendências.
+
+🆕 **E a Fase 2 cria a primeira tabela `@classe: conhecimento`** — o documento coletado. É
+ali que o contrato da Tarefa 1b deixa de ser teoria: a tabela nasce com `source_id`,
+`evidence_id`, `transform_id`, `produced_by_kind`, `produced_by`, `produced_at` e
+`confidence`, e a trava reprova se faltar qualquer um.
+
+⚠️ **A trava garante que a coluna exista, não que alguém escreva nela.** Essa é a diferença
+que no projeto anterior custou caro: três campos de atendimento existiam, nenhuma linha de
+código escrevia neles, e painéis e alertas ficaram pendurados em número que nunca saiu de
+zero. **Quem preenche cada coluna de procedência precisa estar escrito no mapa junto com o
+conector**, na mesma tarefa — não depois.

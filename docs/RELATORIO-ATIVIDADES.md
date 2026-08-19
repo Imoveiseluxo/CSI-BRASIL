@@ -7,6 +7,57 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 20h — plano da Fase 1 revisado com a regra de rastreabilidade
+
+**A conclusão da revisão é mais estreita do que o problema parecia, e isso é o resultado.**
+
+A regra do Book v2 diz que cada nó e cada aresta precisam ser rastreáveis. A leitura
+apressada seria acrescentar `fonte`, `evidência` e `confiança` em toda tabela da Fase 1.
+**Seria errado.** As cinco tabelas desta fase — `organizations`, `memberships`, `projects`,
+`monitors`, `query_versions` — são **configuração de trabalho**: registram o que o operador
+pediu, não o que o sistema descobriu no mundo. Não são nó, aresta nem fato extraído.
+
+Enchê-las de colunas de procedência produziria exatamente o **risco 13** desta lista —
+*campo que ninguém preenche* —, que no projeto anterior deixou painéis, alertas e e-mails
+automáticos pendurados em campos que nenhuma linha de código escrevia.
+
+**O que a regra exige da Fase 1 é o contrato e a trava**, pelo mesmo motivo que a Tarefa 1
+existe: regra que nasce depois da primeira violação já nasceu tarde. A primeira tabela de
+conhecimento aparece na Fase 2.
+
+**O que entrou no plano:**
+
+1. **`docs/CONTRATO-DE-PROCEDENCIA.md`** — duas classes declaradas explicitamente
+   (`configuracao` / `conhecimento`) e as **7 colunas** obrigatórias na segunda:
+   `source_id`, `evidence_id`, `transform_id`, `produced_by_kind`, `produced_by`,
+   `produced_at`, `confidence`.
+2. **Tarefa 1b — a segunda trava** (`tests/rastreabilidade-do-conhecimento.test.ts`): toda
+   tabela declara a classe, a classe é uma das duas, e tabela de conhecimento carrega as 7
+   colunas. **Não existe tabela sem classe** — deixar em branco não é neutro, é a forma mais
+   comum de uma tabela de conhecimento passar batida.
+3. **As cinco tabelas marcadas** `-- @classe: configuracao`, com o porquê escrito ao lado.
+
+**Três decisões de projeto que vale registrar, porque cada uma evita um erro conhecido:**
+
+- **`produced_by_kind` separado de `produced_by`.** A diferença entre *um humano afirmou* e
+  *um modelo inferiu* é o que dá ou tira valor de uma evidência — e sumiria no dia em que
+  agente e pessoa tivessem id do mesmo formato.
+- **`confidence` não pode ter `default` nem `not null`.** Valor padrão inventado vira número
+  na tela que ninguém escreveu. Ou o produtor sabe a confiança, ou a coluna fica nula e a
+  tela mostra "não informado". Há um caso de teste vermelho só para isso.
+- **Na dúvida, é `conhecimento`.** Errar para esse lado custa colunas a mais; errar para o
+  outro custa descobrir na Fase 7 que nada é rastreável.
+
+⚠️ **O limite da trava está escrito nela mesma:** ela lê SQL por expressão regular, não
+entende SQL, e associa a declaração ao `create table` mais próximo. Por isso o passo "provar
+que a trava morde" tem **quatro** casos vermelhos — é ele que prova, não a leitura do código.
+
+⚠️ **E o alerta que sobrevive à revisão:** a trava garante que a coluna **exista**, não que
+alguém **escreva** nela. Quem preenche cada uma precisa estar no mapa junto com o conector,
+na mesma tarefa da Fase 2 — não depois.
+
+---
+
 ## 19/08/2026, 18h45 — Book v2: chegou uma camada de produto inteira
 
 O dono entregou o `CSI_Brasil_Book_v2_Completo_Claude.pdf` (versão 2.0, 19/08/2026) e pediu
