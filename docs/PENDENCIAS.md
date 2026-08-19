@@ -10,6 +10,15 @@
 
 ---
 
+## ✅ Decidido pelo dono em 19/08/2026, 20h36
+
+| O quê | Decisão | O que isso trava |
+|---|---|---|
+| **Banco** (era o item 3) | **PostgreSQL + pgvector**, não a pilha completa | Busca textual, busca vetorial e grafo inicial ficam todos no Postgres, como o próprio book admite (*"Neo4j ou camada graph sobre PostgreSQL inicialmente"*). OpenSearch, ClickHouse, Neo4j, Kafka e Temporal **saem do MVP**. ⚠️ O teto é conhecido e não deve ser fingido: volume de evento e série temporal um dia pede banco analítico — será decisão **medida**, quando o número aparecer |
+| **Primeira fonte** (era o item 4) | **CNPJ** e **e-mail** | ⚠️ **Ordem ainda não definida — ver item 16.** As duas são fontes de natureza oposta, e começar pela errada custa a Fase 2 inteira |
+
+---
+
 ## ✅ Decidido pelo dono em 19/08/2026, 20h20
 
 | O quê | Decisão | O que isso destravou |
@@ -34,6 +43,7 @@
 | **2** | 🆕 **O produto é só operado por você, ou também instalado no cliente?** (levantado pelo **Book v2**, 19/08/2026) | Em 19/08 às 01h04 você decidiu "plataforma que eu opero, vendendo acesso" — e foi **essa** decisão que abriu a porta jurídica para usar o `elite-programa` como referência, porque a licença da Awave permite faturar com o **serviço**, não com o software. **O Book v2 acrescentou uma opção de `on-premise` / *Enterprise deployment*** ("atender organizações que exigem isolamento, dados locais ou rede privada"). As duas coisas não convivem sem consequência: se o CSI Brasil for instalado no cliente, ele vira **software entregue**, e a porta jurídica que estava aberta fecha de novo. ⚠️ Isso não é detalhe de fase 10 — muda o que pode ser usado como referência **agora**, na Fase 1 |
 | **3** | **Banco: começar só com PostgreSQL, ou já montar a pilha completa do book?** | Recomendo PostgreSQL + pgvector no MVP (ver `docs/ROADMAP.md`). A pilha completa — OpenSearch, ClickHouse, Neo4j, Kafka, Temporal — são sete peças para operar antes de existir um usuário. Preciso do seu de acordo para seguir pelo caminho simples |
 | **4** | **Qual é a primeira fonte real?** | A Fase 2 começa com **um** conector. Escolher qual define o resto: um feed RSS de agência é o mais simples e já prova o caminho inteiro. Se você tiver uma fonte que interessa comercialmente mais, ela vem primeiro |
+| **16** | 🆕 **"CNPJ/e-mail": são duas fontes, e qual vem primeiro?** (19/08/2026, 20h36) | O plano diz que a Fase 2 começa com **um** conector, e as duas escolhidas são de natureza oposta. **CNPJ** é fonte oficial, estruturada, com esquema estável e resposta previsível — prova o caminho inteiro (coletar → normalizar → guardar com procedência → buscar) sem lutar com o formato. **E-mail** é o contrário: texto livre, formato que muda sem aviso, remetente que decide o layout. ⚠️ **Hoje mesmo isso apareceu no outro projeto:** o portal Chaves na Mão entrega lead por e-mail, não existe ingestão, e os leads ficam parados numa caixa postal — e a especificação do que vem no e-mail teve que ser lida de uma captura de tela. **Minha recomendação: CNPJ primeiro**, e-mail depois, com o caminho já provado. **E preciso saber o que "e-mail" significa aqui:** (a) monitorar uma caixa nossa que recebe alertas/boletins, (b) receber lead ou aviso de parceiro, ou (c) outra coisa? A resposta muda o conector inteiro |
 | **15** | 🆕 **`requireMfaSatisfied` não foi extraído** (19/08/2026) | O Bahia Realty força o segundo fator antes de entrar no app. Não veio porque redireciona para uma tela `/mfa` que aqui não existe, e guarda apontando para página inexistente é pior que guarda nenhuma. **Entra junto com a tela de MFA**, na fase de autenticação. Registrado para não virar esquecimento |
 
 ---

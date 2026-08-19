@@ -66,15 +66,17 @@ o Data Engine nem o Evidence Vault.
 
 ## Uma discordância entre o book e ele mesmo, que precisa de decisão
 
+✅ **RESOLVIDA pelo dono em 19/08/2026: PostgreSQL + pgvector.**
+
 A seção 16 sugere PostgreSQL + OpenSearch + ClickHouse + Neo4j + Kafka + Redis + S3 +
 Temporal. Duas páginas depois, a mesma seção diz: *"começar como modular monolith + workers
 assíncronos, separar serviços somente quando volume, isolamento de segurança ou perfil de
 carga justificar. Evitar uma arquitetura de dezenas de microserviços no MVP."*
 
-As duas coisas não cabem juntas no MVP. A recomendação registrada aqui — e sujeita à decisão
-do dono, item 3 das pendências — é começar com **PostgreSQL + pgvector** cobrindo busca
-textual, busca vetorial e grafo inicial, exatamente como o próprio book admite ao escrever
-*"Neo4j ou camada graph sobre PostgreSQL inicialmente"*.
+As duas coisas não cabem juntas no MVP. A decisão é começar com **PostgreSQL + pgvector**
+cobrindo busca textual, busca vetorial e grafo inicial, exatamente como o próprio book admite
+ao escrever *"Neo4j ou camada graph sobre PostgreSQL inicialmente"*. **OpenSearch,
+ClickHouse, Neo4j, Kafka e Temporal saem do MVP.**
 
 O teto disso é conhecido e não deve ser fingido: volume de evento e série temporal um dia
 pede banco analítico. Isso será uma decisão medida, quando o número aparecer — não um chute

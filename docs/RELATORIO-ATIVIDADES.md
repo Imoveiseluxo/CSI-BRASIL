@@ -7,6 +7,38 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 20h36 — banco decidido, e a primeira fonte quase
+
+**Duas decisões do dono:**
+
+1. **Banco: PostgreSQL + pgvector.** Busca textual, busca vetorial e grafo inicial ficam
+   todos no Postgres. OpenSearch, ClickHouse, Neo4j, Kafka e Temporal **saem do MVP** — sete
+   peças a menos para operar antes de existir o primeiro usuário. ⚠️ O teto é conhecido e
+   fica escrito: volume de evento e série temporal um dia pede banco analítico, e essa será
+   uma decisão **medida**, quando o número aparecer.
+2. **Primeira fonte: CNPJ e e-mail.**
+
+**A segunda decisão levantou uma pergunta que precisa de resposta antes de virar código**,
+registrada como pendência 16. O plano manda a Fase 2 começar com **um** conector, e as duas
+fontes escolhidas são de natureza oposta:
+
+- **CNPJ** é oficial, estruturada, com esquema estável. Prova o caminho inteiro — coletar,
+  normalizar, guardar com procedência, buscar — sem lutar contra o formato.
+- **E-mail** é o contrário: texto livre, formato que muda sem aviso, remetente decidindo o
+  layout.
+
+⚠️ **Isso não é teoria: aconteceu hoje mesmo no outro projeto.** O portal Chaves na Mão
+entrega lead por e-mail, não existe ingestão de e-mail no sistema, os leads ficam parados
+numa caixa postal — e a especificação do que vem no e-mail teve que ser lida de **uma captura
+de tela**. Começar a Fase 2 pelo caminho mais frágil significa depurar formato de e-mail
+antes de ter provado que o encanamento funciona.
+
+**Recomendação registrada: CNPJ primeiro, e-mail depois**, com o caminho já provado. E falta
+saber o que "e-mail" significa aqui — caixa nossa recebendo boletins, aviso de parceiro, ou
+outra coisa. A resposta muda o conector inteiro.
+
+---
+
 ## 19/08/2026, 20h30 — a base extraída do Bahia Realty, arquivo por arquivo
 
 **Decisão do dono:** extrair, com uma condição dura — *"isso não pode prejudicar em nada o
