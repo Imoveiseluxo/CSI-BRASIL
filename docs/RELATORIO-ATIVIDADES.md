@@ -7,6 +7,65 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 20h50 — CNPJ é a primeira fonte; CPF fica fora, e e-mail fica depois
+
+**Decisão do dono:** CNPJ primeiro. Pediu que ficasse registrado **por que não pode ser CPF
+nem e-mail**.
+
+**A resposta tem duas naturezas, e é importante não misturar: CPF é impedimento JURÍDICO;
+e-mail é impedimento TÉCNICO de ordem.**
+
+### Por que não CPF — e não é "depois", é outro regime
+
+**Medido no book v2: a palavra CPF aparece ZERO vezes. CNPJ aparece 21.** O book prioriza
+CNPJ, PNCP e CVM, e sobre dado pessoal determina: *"finalidade e base legal registrada por
+tratamento/conector"*, *"minimização"*, *"direitos do titular"* e, para legítimo interesse,
+*"avaliação documentada de finalidade, necessidade, balanceamento, salvaguardas e legítima
+expectativa"*. A regra de interpretação fecha: a plataforma *"não é uma ferramenta de
+intrusão ou vigilância clandestina"*, e *"nada de coleta clandestina ou abuso de dados
+pessoais"*.
+
+Três diferenças concretas:
+
+1. **Base pública existe para CNPJ e não existe para CPF.** A Receita publica a base de CNPJ
+   como dado aberto. Não há equivalente para CPF: serviço que "consulta CPF" é de acesso
+   restrito com credencial própria, ou é comércio irregular de dado pessoal.
+2. **Empresa não é titular de dado pessoal; pessoa é.** Com CNPJ, a base legal é trivial —
+   dado público. Com CPF, seria preciso ter finalidade, base legal, minimização, retenção e
+   fluxo de direitos do titular **prontos antes** da primeira linha do conector.
+3. **O primeiro conector define o que o produto é.** Nascer consultando CPF definiria o CSI
+   Brasil como exatamente aquilo que o book proíbe — e nenhuma tela bonita depois desfaz isso.
+
+⚠️ **Nuance honesta, registrada para não virar descuido:** o CNPJ de **MEI** carrega nome e às
+vezes endereço de pessoa física. Dado pessoal entra pela porta do CNPJ mesmo. Por isso
+minimização vale **já no primeiro conector**, não só no dia em que alguém pedir CPF.
+
+### Por que não e-mail primeiro — e este é só de ordem
+
+E-mail **não está proibido**; está na fila. Ele não prova o encanamento: prova a leitura de
+formato.
+
+1. **Não tem chave canônica.** O CNPJ **é** o identificador — que é justamente o que o
+   Canonical Entity Model precisa. Um e-mail não tem entidade canônica: tem remetente, assunto
+   e texto.
+2. **A procedência fica ambígua na primeira pergunta.** O contrato exige `source_id`,
+   `evidence_id` e `confidence`. Com CNPJ: fonte é a Receita, evidência é o registro
+   devolvido, confiança é alta e justificável. Com e-mail: a fonte é o remetente? a caixa? o
+   sistema que encaminhou? Começar pelo caso ambíguo é definir o contrato no pior exemplo.
+3. **O formato muda sem avisar, e isso aconteceu hoje.** No outro projeto, o portal Chaves na
+   Mão entrega lead por e-mail; a especificação teve que ser lida de **uma captura de tela**;
+   o campo do imóvel se chama `reference` do lado deles e `propertyRef` do nosso — e sem o
+   sinônimo o dado chegaria e seria **ignorado em silêncio**. Nada disso teria dado erro.
+
+**Ordem registrada:** CNPJ prova o caminho inteiro (coletar → normalizar → guardar com
+procedência → buscar) com formato estável. E-mail entra depois, com o caminho já provado, e
+aí o trabalho é só o formato.
+
+⚠️ **Ainda falta saber o que "e-mail" significa aqui** — caixa nossa recebendo boletins,
+aviso de parceiro, ou outra coisa. Isso muda o conector inteiro, e continua na pendência 16.
+
+---
+
 ## 19/08/2026, 20h45 — regra permanente: registro a cada tarefa concluída
 
 **Pedido do dono:** ter aqui a mesma regra de registro que existe no Bahia Realty.
