@@ -1,7 +1,15 @@
 # Roadmap — as 11 fases
 
-Fonte: seção 22 do book (`docs/spec/BOOK-CSI-BRASIL.md`). Este arquivo traduz aquela tabela
-para o formato que o projeto usa, e registra **em que ordem** as coisas podem existir.
+Fonte: a seção de roadmap do book (`docs/spec/BOOK-CSI-BRASIL.md`). Este arquivo traduz
+aquela tabela para o formato que o projeto usa, e registra **em que ordem** as coisas podem
+existir.
+
+> ⚠️ **Atualizado para o Book v2.0 (19/08/2026).** O v1 tinha 22 seções e **8 motores**; o
+> v2 tem 25 seções e **10 motores**. Os dois novos são **Investigation / Transform** e
+> **Evidence & Cases Engine** — não é reorganização de texto, é camada de produto nova.
+> O que mudou está no relatório de 19/08. A versão anterior do texto está preservada em
+> `docs/spec/BOOK-CSI-BRASIL-v1.md`, porque as decisões tomadas até 01h daquele dia foram
+> tomadas sobre ela.
 
 ## A regra que define a ordem
 
@@ -18,7 +26,7 @@ opinião; alerta sem score explicável é ruído com hora marcada. Por isso a or
 | **4 — Brazil Data Hub** | CNPJ + PNCP + CVM prioritários | Enriquecimento oficial | ⬜ |
 | **5 — Events & Analytics** | Clusters, dashboards, geografia, scores iniciais | Inteligência acionável | ⬜ |
 | **6 — Extraction Studio** | Schemas, lotes, revisão, exportação | Diferencial comercial | ⬜ |
-| **7 — Cases & Graph** | Casos, relações, grafo v1, Evidence Vault | Investigação corporativa | ⬜ |
+| **7 — Investigation, Cases & Graph** | **Transform Registry**, **Playbooks**, casos, relações, grafo v1, **Evidence Vault e Data Lineage** | Investigação corporativa **auditável** | ⬜ |
 | **8 — Copilot & Agents** | Ask Intelligence, multiagentes, evals | IA operacional | ⬜ |
 | **9 — Multimodal** | Imagem, áudio, vídeo, OCR avançado | Cobertura ampliada | ⬜ |
 | **10 — Mobile & Enterprise** | App, SSO, auditoria avançada, SLA | Enterprise | ⬜ |
@@ -34,6 +42,27 @@ Painel e alertas · Exportação · Copilot com evidências.
 
 Ou seja: **fases 0 a 6, mais a parte de evidência da 7.** Fases 8, 9 e 10 ficam fora do
 primeiro produto vendável.
+
+### O que o v2 acrescentou ao recorte — a Fase de Investigation Engine
+
+O v2 lista, além do MVP acima, um bloco próprio que antes não existia:
+
+- **Transform Registry** com versionamento, permissões, custo e evidência
+- **Playbooks** iniciais: *Investigar Empresa*, *Investigar Evento* e *Verificar Alegação*
+- **Graph Workspace** com expansão, filtros, caminhos e Collections
+- **Case Workspace** com grafos, evidências, notas, tarefas e trilha de auditoria
+- **Data Lineage obrigatório** e indicador de cobertura de coleta
+- **Connector SDK / manifest** para fontes internas e de parceiros
+
+⚠️ **E uma regra de projeto que o v2 escreve em caixa alta, e que muda modelagem:**
+*"o grafo não é decoração. Cada nó e cada aresta devem ser rastreáveis a evidência, fonte,
+Transform, usuário/agente responsável, data e nível de confiança."* Isso não é feature da
+Fase 7 — é coluna obrigatória em toda tabela que guarde nó ou aresta, desde a primeira.
+Descobrir isso depois significa reescrever o modelo de dados.
+
+⚠️ **O v2 também mantém o `elite-programa` fora do caminho crítico**: ele diz que a camada
+multiagente pode *orquestrar* Playbooks, mas **não deve substituir** o Transform Registry,
+o Data Engine nem o Evidence Vault.
 
 ## Uma discordância entre o book e ele mesmo, que precisa de decisão
 

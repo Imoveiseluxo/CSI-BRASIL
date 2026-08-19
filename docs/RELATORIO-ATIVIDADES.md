@@ -7,6 +7,72 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 18h45 — Book v2: chegou uma camada de produto inteira
+
+O dono entregou o `CSI_Brasil_Book_v2_Completo_Claude.pdf` (versão 2.0, 19/08/2026) e pediu
+para atualizar o projeto **antes de fazer qualquer coisa**.
+
+**Método:** em vez de reler 40 páginas de olho, extraí os dois PDFs com
+`pdftotext -layout -enc UTF-8` e **comparei**. O v1 continua preservado em
+`docs/spec/BOOK-CSI-BRASIL-v1.md`, porque as decisões tomadas às 01h04 foram tomadas sobre
+aquele texto — apagá-lo tornaria impossível saber sobre o que o dono decidiu.
+
+**O que mudou, medido:**
+
+| | v1 | v2 |
+|---|---|---|
+| Seções | 22 | **25** |
+| Motores da arquitetura | **8** | **10** |
+| Linhas de texto | 1.544 | 1.909 |
+
+Os dois motores novos são **Investigation / Transform** e **Evidence & Cases Engine**.
+
+**Contagem de termos, que mostra que não é reorganização de texto:**
+
+| Termo | v1 | v2 |
+|---|---|---|
+| Playbook | 0 | **24** |
+| Data Lineage | 0 | **9** |
+| Transform Registry | 0 | **7** |
+| Investigation Engine | 0 | **7** |
+| Graph Workspace | 0 | **4** |
+| Connector SDK | 0 | **3** |
+| Evidence Vault | 3 | **9** |
+
+**A origem da mudança:** o v2 assume o **Maltego** como referência funcional e traduz oito
+capacidades dele em componentes do CSI — Canonical Entity Model, Transform Registry,
+Investigation Playbooks, Graph Workspace, Data Hub + Connector SDK, Recursive Pivot Search,
+Provenance Graph e Graph Collections.
+
+**⚠️ O achado que muda trabalho, não só documentação.** O v2 escreve como regra de projeto:
+*"o grafo não é decoração. Cada nó e cada aresta devem ser rastreáveis a evidência, fonte,
+Transform, usuário/agente responsável, data e nível de confiança."* Isso **não é feature da
+Fase 7** — é coluna obrigatória em toda tabela que guarde nó ou aresta, **desde a primeira**.
+**O plano da Fase 1 foi escrito sobre o v1 e não tem isso.** Executá-lo como está faria o
+modelo de dados nascer sem linhagem, e corrigir depois custaria a base inteira. Registrado
+como risco 14 nas pendências.
+
+**⚠️ E um conflito com uma decisão já tomada.** Em 01h04 o dono decidiu "plataforma que eu
+opero, vendendo acesso" — e foi **essa** decisão que abriu a porta jurídica para usar o
+`elite-programa` como referência, porque a licença da Awave permite faturar com o **serviço**,
+não com o software. **O v2 acrescentou opção de `on-premise` / Enterprise deployment.** Se o
+CSI Brasil também for instalado no cliente, ele vira software entregue e a porta fecha de
+novo. Virou a pendência **2**, e não é detalhe de fase 10: muda o que pode ser usado como
+referência **agora**.
+
+**O que foi atualizado:** `docs/spec/BOOK-CSI-BRASIL.md` (v2, com o v1 preservado ao lado),
+`docs/ROADMAP.md` (Fase 7 renomeada e reescopada, bloco novo do Investigation Engine),
+`CLAUDE.md`, `docs/MAPA-DO-SISTEMA.md` (a regra de rastreabilidade na seção de travas) e
+`docs/PENDENCIAS.md` (pendência 2 e risco 14).
+
+📎 Consertado de passagem: a tabela "Esperando decisão sua" estava sem linha de cabeçalho e
+não renderizava como tabela.
+
+**Nenhum código foi escrito** — o pedido era atualizar as informações antes de qualquer
+coisa, e as três decisões que destravam a Fase 1 continuam abertas.
+
+---
+
 ## 19/08/2026, 01h10 — as duas decisões que destravaram a Fase 1
 
 **O dono decidiu, e as duas respostas mudam o modelo de dados:**

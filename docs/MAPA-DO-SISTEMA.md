@@ -71,6 +71,15 @@ conferido, frequência, e o arquivo do conector.
 
 _Vazio — as travas nascem junto com os conectores._
 
+⚠️ **Regra que o Book v2 (19/08/2026) escreve em caixa alta, e que vale desde a primeira
+tabela:** *"o grafo não é decoração. Cada nó e cada aresta devem ser rastreáveis a
+evidência, fonte, Transform, usuário/agente responsável, data e nível de confiança."*
+
+Isso **não** é feature da Fase 7. É coluna obrigatória em qualquer tabela que guarde nó,
+aresta, entidade ou fato extraído. Nascer sem isso significa reescrever o modelo depois —
+e o projeto anterior do mesmo dono já mostrou o custo de descobrir tarde que **ninguém
+escreve num campo** de que painéis e alertas dependiam.
+
 ⚠️ Esta seção existe desde o primeiro dia por um motivo: no projeto anterior do mesmo dono,
 uma trava foi instalada em **um** canal e os outros três ficaram sem — e ninguém tinha como
 perceber. **Trava nova entra aqui com a lista de todos os caminhos que ela cobre e os que

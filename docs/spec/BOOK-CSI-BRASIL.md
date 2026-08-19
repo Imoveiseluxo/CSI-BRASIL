@@ -1,9 +1,14 @@
 # Book CSI Brasil — texto extraído do PDF
 
-> Extraído de `CSI_Brasil_Book_Completo_Claude.pdf` (versão 1.0, 18/08/2026) em 19/08/2026,
-> com `pdftotext -layout`. **O PDF é a fonte autoritativa** — este arquivo existe para que a
-> especificação viaje junto do código e seja pesquisável. Tabelas do PDF saem embaralhadas
-> na extração; em caso de dúvida sobre uma tabela, volte ao PDF.
+> Extraído de `CSI_Brasil_Book_v2_Completo_Claude.pdf` (**versão 2.0, 19/08/2026**) em
+> 19/08/2026, com `pdftotext -layout -enc UTF-8`. **O PDF é a fonte autoritativa** — este
+> arquivo existe para que a especificação viaje junto do código e seja pesquisável.
+> Tabelas do PDF saem embaralhadas na extração; em caso de dúvida sobre uma tabela,
+> volte ao PDF.
+>
+> A versão anterior está preservada em `BOOK-CSI-BRASIL-v1.md`, porque as decisões
+> registradas até 19/08 às 01h foram tomadas sobre **aquele** texto. O que mudou está
+> resumido no relatório de 19/08.
 
 ---
 
@@ -14,16 +19,16 @@ BOOK EXECUTIVO + TÉCNICO PARA IMPLEMENTAÇÃO COM CLAUDE
 Plataforma Brasileira de Inteligência
 Corporativa, Mídia e Fontes Abertas
 
-Arquitetura de produto, monitoramento, OSINT corporativo, extração
-estruturada, Knowledge Graph, IA multiagente, alertas, LGPD, roadmap e
-contrato de implementação.
+Arquitetura de produto, monitoramento, investigação por entidades e grafos,
+OSINT corporativo, extração estruturada, Evidence Vault, Knowledge Graph, IA
+multiagente, alertas, LGPD, roadmap e contrato de implementação.
 
   OBJETIVO DO DOCUMENTO
   Servir como especificação central para Claude e para a equipe de desenvolvimento do CSI Brasil. O
   material descreve o que construir, por que construir, como organizar os módulos, quais restrições
   observar e quais critérios mínimos devem ser atendidos antes de considerar cada entrega concluída.
 
-Versão 1.0 | 18 de agosto de 2026
+Versão 2.0 | 19 de agosto de 2026
 Documento de produto e engenharia.
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
@@ -35,26 +40,26 @@ O documento foi escrito para funcionar simultaneamente como visão de
 produto, PRD de alto nível, arquitetura de referência e instrução de execução
 para o Claude.
 
-Elemento             Uso esperado
+Elemento               Uso esperado
+Visão e princípios
+Módulos funcionais     Alinhar escopo, posicionamento e decisões de produto.
+Arquitetura e dados
+Agentes de IA          Converter diretamente em épicos e histórias de usuário.
+LGPD e segurança
+Roadmap e backlog      Orientar decisões de backend, dados, busca, IA e
+Contrato Claude        infraestrutura.
 
-Visão e princípios   Alinhar escopo, posicionamento e decisões de produto.
-Módulos funcionais
-Arquitetura e dados  Converter diretamente em épicos e histórias de usuário.
-Agentes de IA
-LGPD e segurança     Orientar decisões de backend, dados, busca, IA e
-Roadmap e backlog    infraestrutura.
-Contrato Claude
-                     Definir responsabilidades, ferramentas, contratos de saída
-                     e limites.
+                       Definir responsabilidades, ferramentas, contratos de saída
+                       e limites.
 
-                     Impedir que funcionalidades sejam construídas fora das
-                     regras de privacidade, segurança e acesso legítimo.
+                       Impedir que funcionalidades sejam construídas fora das
+                       regras de privacidade, segurança e acesso legítimo.
 
-                     Estabelecer uma sequência de implementação incremental
-                     e testável.
+                       Estabelecer uma sequência de implementação incremental
+                       e testável.
 
-                     Dar autonomia para execução sem pedir confirmações
-                     desnecessárias, mas com checkpoints técnicos objetivos.
+                       Dar autonomia para execução sem pedir confirmações
+                       desnecessárias, mas com checkpoints técnicos objetivos.
 
 REGRA DE INTERPRETAÇÃO
 
@@ -73,42 +78,57 @@ repositório.
 
                                                                                         CSI Brasil | 2
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
-
 MAPA DO BOOK
 
 Sumário executivo do conteúdo
 
 Seção  Conteúdo
+1
+2      Tese do produto e posicionamento
 
-1      Tese do produto e posicionamento
-2      Referência funcional: Kribrum.Pro e Kribrum.OSINT
-3      Princípios de produto CSI Brasil
-4      Arquitetura funcional em 8 motores
-5      Fontes e conectores brasileiros
-6      Monitoramento, temas, objetos e queries
-7      Extraction Studio
-8      Company Intelligence
-9      Document, Image, Audio & Video Intelligence
-10     Event, Narrative, Crisis & Opportunity Intelligence
-11     Knowledge Graph e Investigation Workspace
-12     Evidence Vault e verificabilidade
-13     Busca, filtros e Ask Intelligence
-14     Geo Intelligence e dashboards
-15     Alertas e Action Engine
-16     Arquitetura técnica
-17     Modelo de dados
-18     APIs e contratos
-19     Camada multiagente
-20     Segurança, LGPD e governança
-21     UX, telas e navegação
-22     Roadmap, backlog e critérios de aceite
-23     Modelo comercial e métricas
-24     Contrato de execução para Claude
-25     Master Prompt para Claude
+3      Referências funcionais:
+4      Kribrum.Pro/Kribrum.OSINT + Maltego
+
+5      Princípios de produto CSI Brasil
+6
+7      Arquitetura funcional em 10 motores
+8
+9      Fontes e conectores brasileiros
+10     Monitoramento, temas, objetos e queries
+11     Extraction Studio
+       Company Intelligence
+12     Document, Image, Audio & Video Intelligence
+       Event, Narrative, Crisis & Opportunity Intelligence
+13
+14     CSI Investigation Engine, Knowledge Graph,
+15     Playbooks e Cases
+16
+17     Evidence Vault, Data Lineage e verificabilidade
+18
+       Busca, filtros e Ask Intelligence
+19     Geo Intelligence e dashboards
+20     Alertas e Action Engine
+21     Arquitetura técnica
+22     Modelo de dados
+23
+24     APIs, Transforms e contratos
+25
+       Camada multiagente
+       Segurança, LGPD e governança
+       UX, telas e navegação
+       Roadmap, backlog e critérios de aceite
+       Modelo comercial e métricas
+       Contrato de execução para Claude
+       Master Prompt para Claude
+
+                                                                                        CSI Brasil | 3
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
+Seção  Conteúdo
 A      Integração awave-agents
 B      Glossário e referências
 
-                                                                                        CSI Brasil | 3
+                                                                                        CSI Brasil | 4
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 01 - ESTRATÉGIA
@@ -128,8 +148,8 @@ decisão.
 
 Proposta de valor central
 
-DESCOBRIR -> IDENTIFICAR -> EXTRAIR -> ENRIQUECER -> RELACIONAR -> VERIFICAR ->
-ANALISAR -> ALERTAR -> DECIDIR
+     DESCOBRIR -> IDENTIFICAR -> EXTRAIR -> ENRIQUECER -> RELACIONAR -> VERIFICAR ->
+     ANALISAR -> ALERTAR -> DECIDIR
 
 Problema que o CSI Brasil resolve
 
@@ -155,7 +175,7 @@ PR e Comunicação          Reputação, crises, narrativas, share of voice, mí
 Marketing                 influenciadores.
 Inteligência corporativa
 Vendas B2B                Campanhas, concorrência, tendências, intenção,
-Segurança da informação   oportunidade e conteúdo.
+                          oportunidade e conteúdo.
 
                           Empresas, investimentos, movimentos estratégicos, M&A,
                           expansão, relações e sinais de mercado.
@@ -163,26 +183,27 @@ Segurança da informação   oportunidade e conteúdo.
                           Detecção de empresas, projetos, investimentos, licitações e
                           gatilhos comerciais.
 
-                          Exposição pública de ativos e marcas, riscos
-                          informacionais e evidências em fontes abertas permitidas.
-
-                                                                                        CSI Brasil | 4
+                                        CSI Brasil | 5
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 Segmento                             Casos de uso
-Jurídico e compliance
-Real estate / logística / indústria  Monitoramento de atos públicos, processos/contratos
+Segurança da informação
+Jurídico e compliance                Exposição pública de ativos e marcas, riscos
+Real estate / logística / indústria  informacionais e evidências em fontes abertas permitidas.
+
+                                     Monitoramento de atos públicos, processos/contratos
                                      disponíveis, reputação e trilha de evidência.
 
                                      Investimentos, novos empreendimentos, expansão,
                                      terrenos, infraestrutura, fornecedores e contratos.
 
-                                                                                        CSI Brasil | 5
+                                                                                        CSI Brasil | 6
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 02 - BENCHMARK FUNCIONAL
 
-Referência funcional: Kribrum.Pro e Kribrum.OSINT
+Referências funcionais: Kribrum.Pro/Kribrum.OSINT +
+Maltego
 
 O Kribrum é usado como referência pública de lógica de produto. O CSI Brasil
 deve implementar arquitetura própria, código próprio e identidade própria.
@@ -218,77 +239,316 @@ Princípio derivado
 O produto não deve girar em torno de uma caixa de pesquisa. Deve girar em torno de projetos
 persistentes, entidades, monitores, eventos, evidências e relações, permitindo investigação longitudinal.
 
-                                                                                        CSI Brasil | 6
+                                                                                        CSI Brasil | 7
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
+02B - INVESTIGAÇÃO E LINK ANALYSIS
+
+CSI Investigation Engine - princípios derivados do
+Maltego
+
+O Maltego entra no CSI Brasil como referência funcional para investigação
+orientada a entidades, pivôs sucessivos, Transforms, grafos de relacionamento,
+linhagem de dados, evidências e gestão de casos. O CSI Brasil deve implementar
+esses princípios de forma própria, especializada em dados brasileiros e
+integrada ao monitoramento contínuo.
+
+O que o Maltego acrescenta à arquitetura
+
+Capacidade de referência            Decisão de produto para o CSI                       Componente CSI
+                                    Brasil
+
+Entities                            Tratar empresa, pessoa                              Canonical Entity Model
+                                    pública/profissional, domínio,
+                                    endereço, documento, contrato,
+                                    evento, local e demais objetos como
+                                    entidades tipadas e versionadas.
+
+Transforms                          Uma entidade vira entrada para ações                CSI Transform Registry
+                                    controladas que consultam fonte/API
+                                    e retornam novas entidades, relações
+                                    ou evidências.
+
+Machines                            Automatizar sequências e fan-out de                 Investigation Playbooks
+                                    consultas repetíveis.
+
+Graph / Link Analysis               Explorar relações diretas e indiretas,              Graph Workspace
+                                    hubs, clusters, caminhos e nós
+                                    compartilhados.
+
+Data Hub / Connectors               Adicionar fontes sem acoplar o core a               CSI Data Hub + Connector SDK
+                                    um único provedor.
+
+Search / Pivoting                   Usar qualquer resultado validado                    Recursive Pivot Search
+                                    como novo ponto de investigação.
+
+Data Lineage                        Explicar de qual fonte e de qual                    Provenance Graph
+                                    sequência de operações veio cada
+                                    descoberta.
+
+Collections                         Agrupar milhares de nós semelhantes                 Graph Collections / Clusters
+                                    para reduzir ruído visual.
+
+                                                                                                                 CSI Brasil | 8
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
+Capacidade de referência             Decisão de produto para o CSI                      Componente CSI
+Evidence                             Brasil
+Cases
+Custom integrations                  Preservar origem, timestamp, hash,                 Evidence Vault
+On-premise                           artefato e limitações da coleta.
+
+                                     Centralizar grafos, evidências, notas,             Case Workspace
+                                     tarefas, responsáveis e relatórios.
+
+                                     Permitir dados internos e APIs                     Private Connectors / Enterprise
+                                     autorizadas do cliente.                            Sources
+
+                                     Atender organizações que exigem                    Enterprise deployment option
+                                     isolamento, dados locais ou rede
+                                     privada.
+
+REGRA DE PROJETO: o grafo não é decoração. Cada nó e cada aresta devem ser rastreáveis a
+evidência, fonte, Transform, usuário/agente responsável, data e nível de confiança.
+
+Modelo operacional de investigação
+
+O fluxo investigativo passa a operar em paralelo ao monitoramento. Uma menção encontrada pelo
+Listening Engine pode originar uma investigação; uma entidade descoberta no Graph pode, por sua vez,
+gerar novos monitores e alertas. Essa bidirecionalidade é um diferencial central do CSI Brasil.
+
+  MONITORAR -> DETECTAR -> CONVERTER EM ENTIDADE -> EXECUTAR TRANSFORMS -> RESOLVER
+  IDENTIDADE -> RELACIONAR -> VERIFICAR -> PRESERVAR EVIDÊNCIA -> ABRIR/ATUALIZAR CASO ->
+  GERAR AÇÃO
+
+CSI Transforms
+
+Transform é a unidade executável de investigação. Recebe uma ou mais entidades de entrada, aplica
+uma consulta permitida a uma fonte, normaliza o retorno e produz entidades, relações, atributos ou
+evidências. Um Transform nunca deve escrever informação incerta diretamente na entidade canônica
+sem passar pela política de resolução e confiança.
+
+Transform              Entrada       Saída                           Fonte/motor                        Objetivo
+
+company.to_cnpj        Empresa       CNPJ /                          Receita/dados oficiais             Encontrar/confirmar
+                                     CompanyProfile                  ou cache interno                   cadastro empresarial
+
+cnpj.to_public_contra  CNPJ          Contrato / Órgão /              PNCP                               Relacionar compras e
+cts                                  Valor                                                              contratos públicos
+
+company.to_cvm         Empresa/CNPJ  Registro CVM /                  CVM                                Enriquecer
+                                     Documento                                                          companhia regulada
+
+company.to_news_ev     Empresa       Conteúdo / Evento               Índice CSI                         Descobrir eventos e
+ents                                                                                                    narrativas
+
+                                                                                                                  CSI Brasil | 9
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
+Transform             Entrada            Saída                 Fonte/motor              Objetivo
+
+document.extract_ent  Documento          Entidades / Fatos /   Extraction Engine        Estruturar
+ities                                    Relações                                       documento
+
+event.expand_entities Evento             Empresas / Pessoas /  Knowledge Graph          Expandir atores de
+                                         Locais                                         um evento
+
+entity.verify         Qualquer entidade  VerificationResult    Fontes prioritárias      Validar
+                                                                                        identidade/atributo
+relationship.explain Aresta              EvidencePath          Evidence Vault
+                                                                                        Explicar por que duas
+                                                                                        entidades estão
+                                                                                        relacionadas
+
+TransformDefinition { id, version, input_entity_types[], output_entity_types[], provider, legal_scope,
+auth_mode, timeout_ms, rate_limit, cache_ttl, cost_units, confidence_policy, evidence_policy,
+retry_policy, enabled }
+
+Investigation Playbooks
+
+Playbook é um fluxo versionado que combina vários Transforms em sequência e/ou paralelo. Deve
+possuir pré-condições, orçamento de custo, limites de expansão, critérios de parada, passos que exigem
+revisão humana e saída estruturada.
+
+Playbook                         Entrada                                                Fluxo resumido
+
+Investigar Empresa               Nome/CNPJ                                              Resolver empresa -> cadastro ->
+                                                                                        endereços -> documentos ->
+                                                                                        notícias/eventos -> contratos públicos
+                                                                                        -> relações -> resumo verificável
+
+Investigar Evento                Evento/menção                                          Identificar atores -> locais -> valores ->
+                                                                                        fonte original -> republicações ->
+                                                                                        empresas -> documentos -> linha do
+                                                                                        tempo
+
+Verificar Alegação               Texto/fato                                             Extrair alegações -> procurar
+                                                                                        evidências -> comparar fontes ->
+                                                                                        classificar
+                                                                                        suporte/contradição/incerteza
+
+Investigar Contrato Público      PNCP/contrato                                          Órgão -> fornecedor -> valores -> itens
+                                                                                        -> documentos -> vínculos
+                                                                                        empresariais -> eventos relacionados
+
+Expandir Relação                 Entidade A/B                                           Explicar aresta -> localizar
+                                                                                        intermediários -> caminhos
+                                                                                        alternativos -> evidências -> confiança
+
+                                                                                                        CSI Brasil | 10
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
+CSI Data Hub e Connector SDK
+
+O CSI Data Hub deve funcionar como catálogo governado de fontes. Conectores nativos, parceiros e
+integrações privadas compartilham o mesmo manifesto técnico. O core deve depender do contrato do
+conector, e não da implementação de um fornecedor específico.
+
+Classe                         Exemplos                   Responsável                   Governança
+
+Nativo oficial                 Receita/CNPJ, PNCP, CVM,   Equipe CSI                    Alta - priorizar fonte
+                               Dados.gov.br                                             primária
+
+Plataforma/API parceira        Notícias, mídia, social    Fornecedor + CSI              Conforme contrato/licença
+                               permitido, cyber/market
+                               data
+
+Privado do cliente             CRM, ERP, data warehouse,  Cliente                       Escopo restrito ao
+                               base documental                                          workspace
+
+Upload controlado              PDF, DOCX, XLSX, CSV,      Usuário autorizado            Proveniência e classificação
+                               áudio, vídeo, imagem                                     obrigatórias
+
+Data Lineage, cobertura e evidência
+
+Toda descoberta investigativa deve preservar uma trilha de proveniência. Quando a fonte indicar que
+existe um universo maior que o efetivamente coletado, o CSI Brasil deve armazenar quantidade
+esperada, quantidade obtida e razão de cobertura para impedir que uma coleta parcial seja interpretada
+como completa.
+
+Campo mínimo                                              Finalidade
+
+source_ref                                                URL, API, arquivo ou identificador da fonte
+
+transform_id + version                                    Ação que originou o dado
+
+input_entity_ids                                          Entidades usadas como ponto de partida
+
+output_entity_ids                                         Entidades/fatos produzidos
+
+observed_at / collected_at                                Tempo do fato observado e tempo da coleta
+
+evidence_hash                                             Hash do artefato ou snapshot preservado
+
+confidence                                                Confiança calculada e/ou revisada
+
+expected_count / actual_count                             Cobertura quando aplicável
+
+coverage_ratio                                            actual_count / expected_count, com flag de coleta parcial
+
+actor                                                     Usuário, agente ou processo que executou a ação
+
+                                                                                                       CSI Brasil | 11
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
+Fusão das três camadas de referência
+
+Referência/camada         Contribuição conceitual                                       Resultado no CSI Brasil
+
+Kribrum                   Monitoramento, temas, eventos,                                Listening + Analytics
+                          sentimento, geografia, alertas
+
+Maltego                   Entidades, Transforms, pivôs, grafos,                         Investigation + Graph + Evidence
+                          evidência, casos
+
+Brasil Data Intelligence  CNPJ, PNCP, CVM, transparência,                               Enrichment + Verification
+                          dados oficiais nacionais
+
+CSI Brasil                Une as três camadas com Extraction                            Plataforma integrada
+                          Studio, Knowledge Graph, scores,
+                          Copilot e Action Engine
+
+  FRONTEIRA OBRIGATÓRIA: usar apenas fontes públicas, licenciadas ou legitimamente autorizadas;
+  respeitar termos de uso, autenticação, finalidade, minimização e LGPD. O CSI Brasil não deve ser
+  projetado para contornar controles de acesso ou montar perfis pessoais indiscriminados.
 
 03 - DOUTRINA DE PRODUTO
 
 Princípios obrigatórios do CSI Brasil
 
-Princípio                 Aplicação prática
+Princípio                             Aplicação prática
 Evidence-first
-Entity-first              Nenhuma conclusão relevante deve perder a fonte, o
-Human-reviewable          trecho de evidência, a data e a confiança.
+Entity-first                          Nenhuma conclusão relevante deve perder a fonte, o trecho de
+Human-reviewable                      evidência, a data e a confiança.
 Privacy by design
-Tool least privilege      Conteúdos são insumos; entidades e eventos são unidades
-API-first                 de inteligência.
+Tool least privilege                  Conteúdos são insumos; entidades e eventos são unidades de
+API-first                             inteligência.
 Auditability
-Progressive intelligence  Toda automação crítica precisa permitir revisão humana e
-Brazil-native             correção.
-No dark patterns
-                          Minimização, retenção, finalidade, acesso e base legal
-                          devem nascer no modelo de dados.
+Progressive intelligence              Toda automação crítica precisa permitir revisão humana e correção.
+Brazil-native
+No dark patterns                      Minimização, retenção, finalidade, acesso e base legal devem nascer
+                                      no modelo de dados.
 
-                          Agentes e usuários recebem apenas ferramentas e
-                          permissões necessárias.
+                                      Agentes e usuários recebem apenas ferramentas e permissões
+                                      necessárias.
 
-                          Toda capacidade de negócio relevante deve ser exposta por
-                          contratos claros e versionados.
+                                      Toda capacidade de negócio relevante deve ser exposta por
+                                      contratos claros e versionados.
 
-                          Coleta, enriquecimento, IA, edição e exportação devem
-                          produzir logs auditáveis.
+                                      Coleta, enriquecimento, IA, edição e exportação devem produzir
+                                      logs auditáveis.
 
-                          MVP útil antes de multimodalidade e grafos avançados.
+                                      MVP útil antes de multimodalidade e grafos avançados.
 
-                          Português brasileiro, CNPJ, estados/municípios, bases
-                          oficiais e contexto regulatório local.
+                                      Português brasileiro, CNPJ, estados/municípios, bases oficiais e
+                                      contexto regulatório local.
 
-                          Nada de coleta clandestina, bypass de autenticação ou
-                          abuso de dados pessoais.
+                                      Nada de coleta clandestina, bypass de autenticação ou abuso de
+                                      dados pessoais.
 
-                                                                                        CSI Brasil | 7
+                                                                                                               CSI Brasil | 12
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 04 - ARQUITETURA FUNCIONAL
 
-Oito motores do CSI Brasil
+Dez motores do CSI Brasil
 
-Responsabilidades por motor  Responsabilidade
+Responsabilidades por motor           Responsabilidade
+                                      Ingestão contínua, conectores, uploads, filas, rate limits,
+ Motor                                canonicalização e observabilidade de fontes.
+ 1. Listening / Data Engine
+ 2. Extraction Engine                 NER, entidades, valores, datas, CNPJ, contatos corporativos
+ 3. Enrichment Engine                 públicos, endereços, URLs, relações e tabelas.
+ 4. Investigation / Transform Engine
+ 5. Analytics Engine                  Enriquecimento em Receita/CNPJ, PNCP, CVM e demais
+ 6. Knowledge Graph                   fontes oficiais ou autorizadas.
 
- Motor                       Ingestão contínua, conectores, uploads, filas, rate limits,
- 1. Listening / Data Engine  canonicalização e observabilidade de fontes.
- 2. Extraction Engine
- 3. Enrichment Engine        NER, entidades, valores, datas, CNPJ, contatos corporativos
- 4. Analytics Engine         públicos, endereços, URLs, relações e tabelas.
- 5. Knowledge Graph
- 6. Intelligence Engine      Enriquecimento em Receita/CNPJ, PNCP, CVM e demais
- 7. AI Copilot               fontes oficiais ou autorizadas.
- 8. Action Engine
-                             Sentimento, stance, tópicos, clusters, originalidade,
-                             tendências, influência, geografia e métricas.
+                                      Transforms, pivôs recursivos, Playbooks, fan-out
+                                      controlado, verificação e expansão investigativa.
 
-                             Resolução de entidades, relações, aliases, eventos,
-                             documentos, empresas, locais e proveniência.
+                                      Sentimento, stance, tópicos, clusters, originalidade,
+                                      tendências, influência, geografia e métricas.
 
-                             Scores de crise, risco, oportunidade, concorrência e
-                             relevância.
+                                      Resolução de entidades, relações, aliases, eventos,
+                                      documentos, empresas, locais e proveniência.
 
-                             Perguntas em linguagem natural, comparação, explicação,
-                             resumo, investigação e geração de briefing.
+                                                                                             CSI Brasil | 13
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
-                             Alertas, relatórios, exportações, integrações, casos, tarefas
-                             e webhooks.
+Motor                       Responsabilidade
+7. Evidence & Cases Engine
+8. Intelligence Engine      Evidence Vault, data lineage, cobertura da coleta, casos,
+9. AI Copilot               notas, colaboração, auditoria e cadeia de evidência.
+10. Action Engine
+                            Scores de crise, risco, oportunidade, concorrência,
+                            narrativas e relevância.
 
-                                                                                      CSI Brasil | 8
+                            Perguntas em linguagem natural, comparação, explicação,
+                            resumo, investigação e geração de briefing com evidências.
+
+                            Alertas, relatórios, exportações, integrações, tarefas, CRM,
+                            webhooks e mobile.
+
+                                                                                        CSI Brasil | 14
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 05 - DATA HUB BRASIL
@@ -336,25 +596,31 @@ Fontes oficiais prioritárias no MVP
  Dados.gov.br e transparência: catálogos e fontes públicas para enriquecimento setorial e
      governamental.
 
-Contrato de cada conector
+Catálogo, permissões e custo por conector
 
-ConnectorDescriptor {
-   id, provider, source_type, legal_basis_notes,
-   auth_mode, rate_limit, allowed_fields,
-   collection_method, retention_policy,
-   last_success_at, health_status, parser_version
+Cada conector deve declarar quais entidades e Transforms disponibiliza, requisitos de autenticação,
+escopo legal, limites de taxa, custo unitário, retenção permitida, campos sensíveis, SLA e restrições de
+exportação. O painel administrativo deve permitir ativar/desativar conectores por workspace e
+controlar orçamento de uso.
 
-}
-
-REGRA DE COLETA
-
-                                                                                                    CSI Brasil | 9
+                                                                                                    CSI Brasil | 15
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
+Contrato de cada conector
+
+     ConnectorDescriptor {
+         id, provider, source_type, legal_basis_notes,
+         auth_mode, rate_limit, allowed_fields,
+         collection_method, retention_policy,
+         last_success_at, health_status, parser_version
+
+     }
+
+  REGRA DE COLETA
   O CSI Brasil não deve assumir que todo conteúdo visível na Internet pode ser coletado em massa.
   Cada conector precisa registrar método autorizado, limites, finalidade, retenção e condições de uso.
 
-                                                                                                                                    CSI Brasil | 10
+                                                                                                                                    CSI Brasil | 16
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 06 - MONITORAMENTO
@@ -403,18 +669,18 @@ Filtros obrigatórios
  Sentimento e stance
  Original/republicação/duplicata
  Relevância
+
+                                                                                        CSI Brasil | 17
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
  Influência/alcance
  Tipo de evento
  Faixa de valor
-
-                                                                                        CSI Brasil | 11
-CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
-
  CNPJ/CNAE quando aplicável
  Nível de confiança
  Tag e caso
 
-                                                                                                                                    CSI Brasil | 12
+                                                                                                                                    CSI Brasil | 18
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 07 - CORE DIFERENCIAL
@@ -426,48 +692,47 @@ do pipeline.
 
 O que extrair
 
-Tipo                          Campos
+Tipo                         Campos
 
- Empresa                      razão social, fantasia, aliases, domínio
- CNPJ                         número, máscara, validação e fonte
- Pessoa profissional/pública  nome, cargo, organização
- Localização                  endereço, município, UF, país, lat/lon quando derivável
-                              legitimamente
- Valor                        moeda, valor bruto, normalizado e contexto
- Investimento                 valor, empresa, local, prazo, tipo de projeto
- Contrato/licitação           número, órgão, partes, objeto, valor, vigência
- Processo                     número, órgão/tribunal quando público, contexto
- Contato corporativo          telefone/e-mail empresarial público e fonte
- Documento                    tipo, emissor, data, versão, URL ou arquivo
- Produto/serviço              nome, marca, categoria
- Relação                      sujeito, predicado, objeto, evidência e confiança
- URL/domínio                  canonical URL, domínio, links citados
- Data e prazo                 data absoluta, período, prazo e referência temporal
+Empresa                      razão social, fantasia, aliases, domínio
+CNPJ                         número, máscara, validação e fonte
+Pessoa profissional/pública  nome, cargo, organização
+Localização                  endereço, município, UF, país, lat/lon quando derivável
+                             legitimamente
+Valor                        moeda, valor bruto, normalizado e contexto
+Investimento                 valor, empresa, local, prazo, tipo de projeto
+Contrato/licitação           número, órgão, partes, objeto, valor, vigência
+Processo                     número, órgão/tribunal quando público, contexto
+Contato corporativo          telefone/e-mail empresarial público e fonte
+Documento                    tipo, emissor, data, versão, URL ou arquivo
+Produto/serviço              nome, marca, categoria
+Relação                      sujeito, predicado, objeto, evidência e confiança
+URL/domínio                  canonical URL, domínio, links citados
+Data e prazo                 data absoluta, período, prazo e referência temporal
 
 Contrato de extração
 
-Extraction {
-   field_type: "company|cnpj|person|money|location|relation|...",
-   value_raw,
-   value_normalized,
-   entity_id?,
-   source_content_id,
-   evidence_span,
-   extractor: "regex|parser|model|human",
-   confidence: 0.00..1.00,
-   verified: boolean,
-   verified_by?,
-   created_at
+     Extraction {
+         field_type: "company|cnpj|person|money|location|relation|...",
+         value_raw,
+         value_normalized,
+         entity_id?,
+         source_content_id,
+         evidence_span,
+         extractor: "regex|parser|model|human",
+         confidence: 0.00..1.00,
+         verified: boolean,
+         verified_by?,
+         created_at
 
-}
+     }
+
+                                                                                        CSI Brasil | 19
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 Fluxo do usuário
 
 1. Selecionar resultados, monitor, evento, documento ou caso.
-
-                                                                                        CSI Brasil | 13
-CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
-
 2. Escolher schema pronto ou criar schema customizado.
 3. Executar extração assíncrona em lotes.
 4. Revisar campos de baixa confiança em fila de validação.
@@ -479,7 +744,7 @@ Fluxo do usuário
   fontes oficiais podem ter confiança superior aos inferidos por modelo, mas a fonte e o timestamp
   sempre permanecem visíveis.
 
-                                                                                                                                    CSI Brasil | 14
+                                                                                                                                    CSI Brasil | 20
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 08 - COMPANY INTELLIGENCE
@@ -533,7 +798,7 @@ Entity Resolution
 Pesos são ponto de partida. Devem ser calibrados por conjunto de validação brasileiro e não tratados
 como regra universal.
 
-                                                                                        CSI Brasil | 15
+                                                                                        CSI Brasil | 21
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 09 - MULTIMODALIDADE
 
@@ -565,7 +830,7 @@ Audio & Video Intelligence
 A interface deve permitir clicar em um fato e saltar para o timestamp correspondente. A transcrição
 precisa preservar idioma, confiança por segmento e versão do modelo.
 
-                                                                                                                                    CSI Brasil | 16
+                                                                                                                                    CSI Brasil | 22
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 10 - INTELIGÊNCIA ANALÍTICA
@@ -605,33 +870,33 @@ Opportunity Score - versão inicial
   testadas por segmento e calibradas com dados reais. O sistema deve mostrar os fatores que
   compõem cada score.
 
-                                                                                                                                    CSI Brasil | 17
+                                                                                                                                    CSI Brasil | 23
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 11 - INVESTIGAÇÃO
 
-Knowledge Graph e Investigation Workspace
+Knowledge Graph, Investigation Workspace e Cases
 
-Tipos de nó                                      Exemplos
+Tipos de nó   Exemplos
 
  Categoria
 
-Organizações                                     empresa, órgão, associação, marca, grupo econômico
+Organizações  empresa, órgão, associação, marca, grupo econômico
 Pessoas
-                                                 executivos, representantes, autores, agentes públicos
-Eventos                                          quando o dado for legitimamente público e relevante
+              executivos, representantes, autores, agentes públicos
+Eventos       quando o dado for legitimamente público e relevante
 
-Documentos                                       investimento, contrato, aquisição, crise, lançamento,
-Locais                                           expansão
+Documentos    investimento, contrato, aquisição, crise, lançamento,
+Locais        expansão
 Ativos
-                                                 edital, contrato, relatório, notícia, release, apresentação
+              edital, contrato, relatório, notícia, release, apresentação
 Fontes
-                                                 país, estado, município, endereço, empreendimento
+              país, estado, município, endereço, empreendimento
 
-                                                 produto, domínio, projeto, imóvel/empreendimento
-                                                 quando pertinente
+              produto, domínio, projeto, imóvel/empreendimento
+              quando pertinente
 
-                                                 veículo, portal, conta pública, órgão, dataset
+              veículo, portal, conta pública, órgão, dataset
 
 Tipos de relação
 
@@ -650,6 +915,22 @@ Tipos de relação
  FORNECE_PARA
  SÓCIO/ADMINISTRADOR conforme fonte pública e finalidade legítima
 
+Graph Workspace e Collections
+
+O Graph Workspace deve suportar expansão por Transform, agrupamento de nós semelhantes, filtros
+por tipo/confiança/fonte/data, caminhos entre entidades, detecção de hubs e abertura da evidência de
+cada aresta. Para grafos grandes, Collections/Clusters devem reduzir ruído sem apagar os elementos
+individuais.
+
+                                                                                        CSI Brasil | 24
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
+Regra de expansão segura
+
+Nenhum Playbook deve expandir indefinidamente. Cada execução precisa de limites de profundidade,
+quantidade máxima de nós, custo, tempo, domínios permitidos e condição de parada. Expansões
+envolvendo dados pessoais devem aplicar finalidade, minimização e política específica do workspace.
+
 Investigation Workspace
 
 Casos são espaços controlados onde analistas reúnem conteúdos, entidades, relações, documentos,
@@ -663,7 +944,7 @@ Case {                                           documents[],
 
 }
 
-                                                                                        CSI Brasil | 18
+                                                                                        CSI Brasil | 25
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 12 - EVIDÊNCIA
@@ -686,25 +967,31 @@ parser/model_version        Versão do parser ou modelo que gerou a extração.
 confidence                  Confiança de extração/classificação.
 human_review                Quem revisou e quando, quando aplicável.
 
+Data Lineage e completude da coleta
+
+Além do pacote de evidência, cada resultado derivado deve apontar o caminho de origem: entidade
+inicial -> Transform/consulta -> fonte -> resultado. Sempre que a fonte oferecer contagem total ou
+estimada, registrar expected_count, actual_count e coverage_ratio, exibindo aviso quando a cobertura
+não for integral.
+
 Regra de resposta da IA
 
 O Copilot deve distinguir explicitamente três classes: (1) fato observado em fonte, (2) inferência do
 sistema e (3) hipótese do analista. Uma hipótese nunca pode aparecer como fato.
 
-CADEIA DE CUSTÓDIA DIGITAL
+  CADEIA DE CUSTÓDIA DIGITAL
+  Para usos jurídicos, regulatórios ou de segurança, a plataforma pode apoiar preservação e auditoria
+  de evidências, mas não deve prometer validade probatória automática. Requisitos jurídicos
+  específicos devem ser definidos com assessoria especializada.
 
-Para usos jurídicos, regulatórios ou de segurança, a plataforma pode apoiar preservação e auditoria
-de evidências, mas não deve prometer validade probatória automática. Requisitos jurídicos
-específicos devem ser definidos com assessoria especializada.
-
-                                                                                        CSI Brasil | 19
+                                                                                        CSI Brasil | 26
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 13 - BUSCA
 
 Busca, filtros e Ask Intelligence
 
-Três modos                                       Objetivo
+Quatro modos                                     Objetivo
 
  Modo
 
@@ -712,9 +999,12 @@ Busca simples                                    Encontrar rapidamente termos, e
 Busca avançada
                                                  Booleanos, proximidade, campos, operadores e filtros
 Ask Intelligence                                 combináveis.
-
+Pivot Search
                                                  Responder perguntas sobre a base indexada e citar
                                                  evidências internas.
+                                                 Usar uma entidade ou resultado validado como novo
+                                                 ponto de investigação, oferecendo Transforms e Playbooks
+                                                 compatíveis com tipo, fonte e permissão.
 
 Exemplo Ask Intelligence
 
@@ -735,7 +1025,7 @@ A busca deve combinar BM25/lexical + embeddings semânticos + boosts por entidad
 confiabilidade da fonte e contexto do projeto. O usuário deve conseguir ordenar por relevância, data,
 impacto ou risco.
 
-                                                                                        CSI Brasil | 20
+                                                                                        CSI Brasil | 27
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 14 - ANALYTICS
 
@@ -766,7 +1056,7 @@ Dashboards padrão
  Source Quality & Coverage
  Operations / Connector Health
 
-                                                                                                                                    CSI Brasil | 21
+                                                                                                                                    CSI Brasil | 28
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 15 - AÇÃO
@@ -808,7 +1098,7 @@ Controles contra fadiga de alerta
  regras por usuário/equipe
  explicação do motivo do alerta
 
-                                                                                                                                    CSI Brasil | 22
+                                                                                                                                    CSI Brasil | 29
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 16 - ENGENHARIA
 
@@ -846,16 +1136,15 @@ Stack sugerido      Tecnologia sugerida                                         
                                                                                         Sessões, locks, rate-limit e cache.
 
                                                                                         Snapshots, documentos, mídia e
-                                                                                        artefatos.
 
-                                                                                        CSI Brasil | 23
+                                                                                        CSI Brasil | 30
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 Camada           Tecnologia sugerida                                                    Observação
-
-Orquestração     Temporal                                                               Workflows confiáveis e
-Observabilidade  OpenTelemetry + logs/metrics/traces                                    reprocessamento.
-
+Orquestração     Temporal
+Observabilidade  OpenTelemetry + logs/metrics/traces                                    artefatos.
+                                                                                        Workflows confiáveis e
+                                                                                        reprocessamento.
                                                                                         Métricas por conector, workflow e
                                                                                         agente.
 
@@ -865,7 +1154,7 @@ Começar como modular monolith + workers assíncronos. Separar serviços somente
 isolamento de segurança ou perfil de carga justificar. Evitar uma arquitetura de dezenas de
 microserviços no MVP.
 
-                                                                                                    CSI Brasil | 24
+                                                                                        CSI Brasil | 31
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 17 - DADOS               Função
@@ -896,38 +1185,46 @@ Entidades de domínio     objeto de suporte ao domínio
  Location                objeto de suporte ao domínio
  Extraction              objeto de suporte ao domínio
  Evidence                objeto de suporte ao domínio
- Document                investigação controlada
+ Document
  MediaAsset
  Metric
  Score
  AlertRule
  Alert
- Case
 
-                                                                                        CSI Brasil | 25
+                                                                                        CSI Brasil | 32
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
-Entidade                  Função
+Entidade             Função
 
- CaseItem                 objeto de suporte ao domínio
- Note                     objeto de suporte ao domínio
- Report                   objeto de suporte ao domínio
- ExportJob                objeto de suporte ao domínio
- AuditLog                 auditoria
- ModelRun                 execução de IA
- HumanReview              objeto de suporte ao domínio
+Case                 investigação controlada
+CaseItem             objeto de suporte ao domínio
+Note                 objeto de suporte ao domínio
+Report               objeto de suporte ao domínio
+ExportJob            objeto de suporte ao domínio
+AuditLog             auditoria
+ModelRun             execução de IA
+HumanReview          objeto de suporte ao domínio
+TransformDefinition  contrato versionado de investigação/conector
+TransformRun         execução auditável de Transform
+Playbook             workflow investigativo versionado
+PlaybookRun          execução auditável de Playbook
+GraphView            estado/configuração de visualização investigativa
+ProvenanceEdge       linhagem entre entrada, operação, fonte e resultado
+EvidencePath         caminho explicável de evidências
+CoverageMetric       expected/actual/coverage por coleta
 
 Content - campos mínimos
 
-Content {
-   id, workspace_scope?, source_id, external_id?, canonical_url?,
-   author_id?, published_at?, collected_at, language,
-   title?, body_text, media_refs[], location_hints[],
-   engagement_metrics{}, original_content_id?, duplicate_cluster_id?,
-   source_reliability, raw_storage_ref?, content_hash,
-   parser_version, visibility_policy, retention_policy
+     Content {
+         id, workspace_scope?, source_id, external_id?, canonical_url?,
+         author_id?, published_at?, collected_at, language,
+         title?, body_text, media_refs[], location_hints[],
+         engagement_metrics{}, original_content_id?, duplicate_cluster_id?,
+         source_reliability, raw_storage_ref?, content_hash,
+         parser_version, visibility_policy, retention_policy
 
-}
+     }
 
 Multi-tenancy
 
@@ -935,8 +1232,9 @@ Dados públicos globais podem ser reutilizados em uma camada compartilhada com i
 resultados privados. Uploads, notas, casos, integrações e dados licenciados específicos permanecem
 estritamente isolados por workspace e política.
 
-                                                                                        CSI Brasil | 26
+                                                                                        CSI Brasil | 33
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
 18 - INTEGRAÇÃO
 
 APIs, eventos e contratos
@@ -953,23 +1251,31 @@ REST/GraphQL
 
 Eventos de domínio
 
-     content.collected
-     content.normalized
-     content.deduplicated
-     extraction.completed
-     entity.resolved
-     event.detected
-     score.updated
-     alert.triggered
-     case.item_added
-     report.generated
+content.collected
+content.normalized
+content.deduplicated
+extraction.completed
+entity.resolved
+event.detected
+score.updated
+alert.triggered
+case.item_added
+report.generated
+transform.started
+transform.completed
+transform.failed
+playbook.started
+playbook.completed
+relationship.created
+evidence.linked
+coverage.updated
 
 Webhook
 
 Assinatura HMAC, retries exponenciais, dead-letter, replay manual e idempotência. Não enviar dados
 além do necessário para o destino configurado.
 
-                                                                                                                                    CSI Brasil | 27
+                                                                                                                                    CSI Brasil | 34
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 19 - IA MULTIAGENTE
 
@@ -995,28 +1301,32 @@ Opportunity   Detectar sinais comerciais.                                       
 Report        Produzir briefings.                                                       case/evidence read, report templates
 Compliance    Aplicar políticas de dados.                                               policy engine, audit read
 
-                                                                                                             CSI Brasil | 28
+                                                                                                             CSI Brasil | 35
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
-Agente             Responsabilidade                                                     Ferramentas mínimas
-                                                                                        fixtures, eval harness
- QA                Testar respostas e contratos.
+Agente         Responsabilidade                                                         Ferramentas mínimas
+QA
+Investigation  Testar respostas e contratos.                                            fixtures, eval harness
+               Executar Playbooks autorizados e                                         transform registry, playbook runner,
+Evidence       controlar expansão.                                                      graph read/write controlado
+               Validar proveniência, cobertura e                                        evidence vault, provenance read,
+               vínculos de evidência.                                                   coverage metrics
 
 Contrato de saída
 
-AgentResult<T> {
-   status: "ok|partial|blocked|error",
-   data: T,
-   evidence_refs: string[],
-   confidence: number,
-   assumptions: string[],
-   policy_flags: string[],
-   next_actions: string[],
-   trace_id: string
+     AgentResult<T> {
+         status: "ok|partial|blocked|error",
+         data: T,
+         evidence_refs: string[],
+         confidence: number,
+         assumptions: string[],
+         policy_flags: string[],
+         next_actions: string[],
+         trace_id: string
 
-}
+     }
 
-                                                                                                                CSI Brasil | 29
+                                                                                        CSI Brasil | 36
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 20 - SEGURANÇA E LGPD
@@ -1040,33 +1350,33 @@ Privacidade by design
 
 Segurança
 
-Controle      Requisito
+Controle                                          Requisito
 
-Autenticação  SSO/OIDC, MFA opcional/obrigatório por plano, sessões e
-Autorização   revogação.
+Autenticação                                      SSO/OIDC, MFA opcional/obrigatório por plano, sessões e
+Autorização                                       revogação.
 Criptografia
-Segredos      RBAC + ABAC para casos, fontes, exports e ferramentas de
-Auditoria     agente.
+Segredos                                          RBAC + ABAC para casos, fontes, exports e ferramentas de
+Auditoria                                         agente.
 Supply chain
-Uploads       TLS em trânsito; criptografia em repouso; gestão de
-IA            chaves.
+Uploads                                           TLS em trânsito; criptografia em repouso; gestão de
+IA                                                chaves.
 Exports
-              Vault/secret manager; nunca em prompt, log ou
-              repositório.
+                                                  Vault/secret manager; nunca em prompt, log ou
+                                                  repositório.
 
-              logs imutáveis ou com proteção contra adulteração para
-              operações críticas.
+                                                  logs imutáveis ou com proteção contra adulteração para
+                                                  operações críticas.
 
-              SCA, dependabot equivalente, SBOM e assinatura de builds
-              quando viável.
+                                                  SCA, dependabot equivalente, SBOM e assinatura de builds
+                                                  quando viável.
 
-              antimalware, validação MIME, quotas e sandbox de
-              parsing.
+                                                  antimalware, validação MIME, quotas e sandbox de
+                                                  parsing.
 
-              prompt injection defenses, tool allowlists, redaction de
-              segredos, output validation.
+                                                  prompt injection defenses, tool allowlists, redaction de
+                                                  segredos, output validation.
 
-              watermark opcional, classificação, autorização e log.
+                                                  watermark opcional, classificação, autorização e log.
 
 Fronteiras proibidas
 
@@ -1074,47 +1384,58 @@ Fronteiras proibidas
  coleta de contas privadas sem autorização
  credenciais vazadas/roubadas
  localização clandestina de indivíduos
- inferência de atributos pessoais sensíveis sem base apropriada
- dossiês pessoais indiscriminados sem finalidade legítima
 
-                                                                                        CSI Brasil | 30
+                                                                                        CSI Brasil | 37
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
+ inferência de atributos pessoais sensíveis sem base apropriada
+ dossiês pessoais indiscriminados sem finalidade legítima
  exploração de vulnerabilidades ou intrusão
  contorno de termos/API por engenharia evasiva
 
-                                                                                                                                    CSI Brasil | 31
+                                                                                                                                    CSI Brasil | 38
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
-21 - EXPERIÊNCIA
+21 - EXPERIÊNCIA         Função
 
-UX, telas e navegação
+UX, telas e navegação    Resumo executivo, mudanças, crises, oportunidades e
+                         tarefas.
+Navegação principal      Fluxo de conteúdos e eventos em tempo quase real.
+                         Configuração de temas/queries e cobertura.
+ Menu                    Busca simples/avançada/Ask Intelligence.
+ Intelligence Home       Clusters e timeline de acontecimentos.
+                         Company Intelligence e enriquecimento.
+ Live Feed               Pessoas profissionais/públicas, marcas, órgãos, locais e
+ Monitores               produtos.
+ Busca                   Biblioteca, parsing, extrações e evidências.
+ Eventos                 Extração em lote e schemas.
+ Empresas                Relações e exploração visual.
+ Entidades               Geo Intelligence.
+                         Fila priorizada por score e explicação.
+ Documentos              Sinais comerciais e estratégicos.
+ Extraction Studio       Investigações e dossiês controlados.
+ Graph                   Análises configuráveis e drill-down.
+ Mapa                    Templates e geração.
+ Crises                  Regras, canais, histórico e saúde.
+ Oportunidades           APIs, conectores, webhooks e credenciais.
+ Casos                   Usuários, permissões, políticas, auditoria e billing.
+ Dashboards              Workspace para pivôs, expansão, paths e execução
+ Relatórios              controlada de investigação.
+ Alertas                 Catálogo e execução de Transforms/Playbooks conforme
+ Integrações             entidade, custo e permissão.
+ Admin                   Data lineage, snapshots, hashes, cobertura e validação das
+ Investigation           evidências.
 
-Navegação principal    Função
+ Transforms & Playbooks
 
- Menu
+ Evidence
 
-Intelligence Home      Resumo executivo, mudanças, crises, oportunidades e
-                       tarefas.
-Live Feed              Fluxo de conteúdos e eventos em tempo quase real.
-Monitores              Configuração de temas/queries e cobertura.
-Busca                  Busca simples/avançada/Ask Intelligence.
-Eventos                Clusters e timeline de acontecimentos.
-Empresas               Company Intelligence e enriquecimento.
-Entidades              Pessoas profissionais/públicas, marcas, órgãos, locais e
-                       produtos.
-Documentos             Biblioteca, parsing, extrações e evidências.
-Extraction Studio      Extração em lote e schemas.
-Graph                  Relações e exploração visual.
-Mapa                   Geo Intelligence.
-Crises                 Fila priorizada por score e explicação.
-Oportunidades          Sinais comerciais e estratégicos.
-Casos                  Investigações e dossiês controlados.
-Dashboards             Análises configuráveis e drill-down.
-Relatórios             Templates e geração.
-Alertas                Regras, canais, histórico e saúde.
-Integrações            APIs, conectores, webhooks e credenciais.
-Admin                  Usuários, permissões, políticas, auditoria e billing.
+                                                                                        CSI Brasil | 39
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
+A navegação desktop deve reservar áreas de primeira classe para Investigation, Graph,
+Transforms/Playbooks, Cases e Evidence. O usuário deve poder sair de uma menção, abrir a entidade
+correspondente, executar um Transform e voltar ao caso sem perder contexto.
 
 Mobile
 
@@ -1122,43 +1443,40 @@ O app móvel não precisa reproduzir o desktop. Priorizar alertas, feed, resumo,
 casos, aprovação/compartilhamento e push. Configurações avançadas e graph investigation
 permanecem no web.
 
-                                                                                        CSI Brasil | 32
-CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
-
 22 - ENTREGA
 
 Roadmap, backlog e critérios de aceite
 
-Fases                     Escopo                                                        Saída
+Fases                             Escopo                                                Saída
 
  Fase
 
-0 - Fundação              PRD, arquitetura, threat model, LGPD,                         Base governada.
-                          design system, CI/CD
-1 - Core                                                                                Produto navegável.
-                          Auth, workspace, projetos, monitores,
-2 - Data MVP              users/RBAC                                                    Primeiro monitoramento útil.
+0 - Fundação                      PRD, arquitetura, threat model, LGPD,                 Base governada.
+1 - Core                          design system, CI/CD
+2 - Data MVP                                                                            Produto navegável.
+3 - Intelligence MVP              Auth, workspace, projetos, monitores,
+4 - Brazil Data Hub               users/RBAC                                            Primeiro monitoramento útil.
+5 - Events & Analytics
+6 - Extraction Studio             Web/news + uploads + fila +                           Dados estruturados.
+                                  normalização + busca
+7 - Investigation, Cases & Graph                                                        Enriquecimento oficial.
+                                  NER, entidades, extração, sentimento,                 Inteligência acionável.
+                                  dedup
+                                                                                        Diferencial comercial forte.
+                                  CNPJ + PNCP + CVM prioritários
+                                                                                        Investigação corporativa
+                                  clusters, dashboards, geografia, scores               auditável.
+                                  iniciais
 
-3 - Intelligence MVP      Web/news + uploads + fila +                                   Dados estruturados.
-                          normalização + busca
-4 - Brazil Data Hub                                                                     Enriquecimento oficial.
-5 - Events & Analytics    NER, entidades, extração, sentimento,                         Inteligência acionável.
-                          dedup
-6 - Extraction Studio                                                                   Diferencial comercial forte.
-7 - Cases & Graph         CNPJ + PNCP + CVM prioritários                                Investigação corporativa.
-8 - Copilot & Agents                                                                    IA operacional.
-9 - Multimodal            clusters, dashboards, geografia, scores                       Cobertura ampliada.
-10 - Mobile & Enterprise  iniciais                                                      Enterprise.
+                                  schemas, lotes, revisão, export
 
-                          schemas, lotes, revisão, export
+                                  Transform Registry, Playbooks,
+                                  cases, relações, graph v1,
+                                  Evidence Vault e Data Lineage
 
-                          casos, relações, graph v1, evidence vault
-
-                          Ask Intelligence, multiagentes, evals
-
-                          imagem, áudio, vídeo, OCR avançado
-
-                          app, SSO, auditoria avançada, SLA
+8 - Copilot & Agents              Ask Intelligence, multiagentes, evals                 IA operacional.
+9 - Multimodal                    imagem, áudio, vídeo, OCR avançado                    Cobertura ampliada.
+10 - Mobile & Enterprise          app, SSO, auditoria avançada, SLA                     Enterprise.
 
 MVP vendável - não incluir tudo
 
@@ -1166,6 +1484,10 @@ MVP vendável - não incluir tudo
  Projetos e Monitores
  Web/news + uploads
  Busca e filtros
+
+                                                                                                             CSI Brasil | 40
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
  Deduplicação
  Entity Extraction
  Company Intelligence/CNPJ
@@ -1177,14 +1499,19 @@ MVP vendável - não incluir tudo
  Exportação
  Copilot com evidências
 
+Fase de Investigation Engine
+
+ Transform Registry com versionamento, permissões, custo e evidência.
+ Playbooks iniciais: Investigar Empresa, Investigar Evento e Verificar Alegação.
+ Graph Workspace com expansão, filtros, paths e Collections.
+ Case Workspace com grafos, evidências, notas, tarefas e trilha de auditoria.
+ Data Lineage obrigatório e indicador de cobertura de coleta.
+ Connector SDK/manifest para fontes internas e parceiros.
+
 Definition of Done global
 
  Código versionado e revisado
  testes unitários e integração
-
-                                                                                               CSI Brasil | 33
-CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
-
  telemetria mínima
  tratamento de erro e retry
  documentação OpenAPI quando API
@@ -1195,7 +1522,7 @@ Definition of Done global
  critério de acessibilidade web básico
  rollback ou feature flag para mudança de risco
 
-                                                                                                                                    CSI Brasil | 34
+                                                                                                                                    CSI Brasil | 41
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 23 - NEGÓCIO
@@ -1204,13 +1531,13 @@ Modelo comercial e métricas de produto
 
 Estrutura de planos - sugestão
 
-Plano                       Perfil                                                      Limites / diferenciais
+Plano                        Perfil                                                     Limites / diferenciais
 
-Starter                     PMEs/agências pequenas                                      Poucos monitores, retenção menor,
-Professional                PR/marketing/inteligência                                   web/news, dashboards básicos.
-Enterprise                  Grandes empresas/governo
+Starter                      PMEs/agências pequenas                                     Poucos monitores, retenção menor,
+Professional                 PR/marketing/inteligência                                  web/news, dashboards básicos.
+Enterprise                   Grandes empresas/governo
                                                                                         Mais fontes, Extraction Studio, alertas
-Data/API                    Plataformas e integradores                                  avançados, integrações.
+Data/API                     Plataformas e integradores                                 avançados, integrações.
 
                                                                                         SSO, SLA, retention custom, cases,
                                                                                         graph, audit, private connectors,
@@ -1219,22 +1546,22 @@ Data/API                    Plataformas e integradores                          
                                                                                         Cobrança por volume de chamadas,
                                                                                         eventos, entidades e exportações.
 
-Métricas norteadoras                Por que importa
+Métricas norteadoras                 Por que importa
 
- Métrica
+ Métrica                             Tempo até o usuário encontrar algo acionável.
+                                     Qualidade dos resultados prioritários.
+ Time-to-first-insight               Confiabilidade dos campos estruturados.
+ Precision@K                         Evita duplicidades e relações erradas.
+ Extraction accuracy                 Reduz fadiga e aumenta confiança.
+ Entity resolution accuracy          Percentual de insights com evidência rastreável.
+ Alert precision                     Uso real do produto.
+ Evidence coverage                   Monitores que geram alertas/casos/exports úteis.
+ Weekly active analysts              Sustentabilidade comercial.
+ Monitors producing actions          Eficiência de infraestrutura e IA.
+ Retention / churn
+ Cost per 1k contents
 
-Time-to-first-insight               Tempo até o usuário encontrar algo acionável.
-Precision@K                         Qualidade dos resultados prioritários.
-Extraction accuracy                 Confiabilidade dos campos estruturados.
-Entity resolution accuracy          Evita duplicidades e relações erradas.
-Alert precision                     Reduz fadiga e aumenta confiança.
-Evidence coverage                   Percentual de insights com evidência rastreável.
-Weekly active analysts              Uso real do produto.
-Monitors producing actions          Monitores que geram alertas/casos/exports úteis.
-Retention / churn                   Sustentabilidade comercial.
-Cost per 1k contents                Eficiência de infraestrutura e IA.
-
-                                                                                                                CSI Brasil | 35
+                                                                                                                CSI Brasil | 42
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 24 - EXECUÇÃO COM CLAUDE
@@ -1264,16 +1591,40 @@ Regras de autonomia
  Em tarefas grandes, produzir checklist interno e seguir até o critério de aceite.
  Se um requisito for impossível ou inseguro, implementar alternativa segura e registrar a limitação.
 
+Regras específicas do Investigation Engine
+
+ Implementar Transforms como contratos versionados, idempotentes quando possível e com saída
+     estruturada.
+
+ Nunca permitir que um Transform grave fato incerto diretamente na entidade canônica sem política
+     de resolução/confiança.
+
+ Toda aresta do grafo precisa de evidence_ids e provenance_path.
+ Playbooks devem possuir limites explícitos de profundidade, nós, tempo, custo e condição de parada.
+ Ao integrar fonte externa, registrar licença/termos, autenticação, rate limit, cache, retenção e
+
+     campos permitidos.
+ Distinguir coleta incompleta de ausência de resultado; preservar expected_count/actual_count
+
+     quando disponível.
+ Projetar o Graph como interface investigativa sobre dados auditáveis, nunca como geração visual
+
+     desconectada da evidência.
+
 Ordem de decisão
 
-7. Segurança e legalidade
-8. Integridade de evidência e auditabilidade
-9. Correção funcional
-10. Experiência do usuário
-11. Escalabilidade necessária agora
-12. Custo
-13. Velocidade de entrega
-14. Otimizações futuras
+1. Segurança e legalidade
+2. Integridade de evidência e auditabilidade
+3. Correção funcional
+
+                                                                                                                                    CSI Brasil | 43
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
+4. Experiência do usuário
+5. Escalabilidade necessária agora
+6. Custo
+7. Velocidade de entrega
+8. Otimizações futuras
 
 Entrega de cada tarefa
 
@@ -1286,53 +1637,67 @@ Entrega de cada tarefa
      6. Critério de aceite validado.
      7. Próxima tarefa lógica do roadmap.
 
-                                                                                                                                    CSI Brasil | 36
+                                                                                                                                    CSI Brasil | 44
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 25 - PROMPT CENTRAL
 
+                                                                                                                                    CSI Brasil | 45
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
 Master Prompt para Claude - CSI Brasil
 
+                                                                                                                                    CSI Brasil | 46
+CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
+
 PROJETO: CSI Brasil
-OBJETIVO: construir uma plataforma brasileira de inteligência corporativa, mídia e fontes
-abertas, baseada em arquitetura própria e inspirada apenas em padrões funcionais públicos de
-plataformas de monitoramento e OSINT corporativo.
+OBJETIVO: construir uma plataforma brasileira de inteligência corporativa, mídia e fontes abertas, baseada em
+arquitetura própria e inspirada apenas em padrões funcionais públicos de plataformas de monitoramento e OSINT
+corporativo.
 
 PRINCÍPIO CENTRAL
-Descobrir -> Identificar -> Extrair -> Enriquecer -> Relacionar -> Verificar -> Analisar ->
-Alertar -> Decidir.
+Descobrir -> Identificar -> Extrair -> Enriquecer -> Relacionar -> Verificar -> Analisar -> Alertar -> Decidir.
 
 REGRAS INEGOCIÁVEIS
 - Evidence-first: toda afirmação relevante deve preservar evidência e proveniência.
-- Entity-first: estruturar a inteligência em entidades, eventos e relações, não apenas
-documentos.
+- Entity-first: estruturar a inteligência em entidades, eventos e relações, não apenas documentos.
 - Privacy by design: finalidade, minimização, retenção, acesso e base legal entram no modelo.
 - Não fazer bypass de autenticação, paywall, API, termos ou controles de acesso.
 - Não usar credenciais roubadas, dados privados sem autorização ou mecanismos de intrusão.
-- Não copiar código, identidade visual ou ativos proprietários do Kribrum ou de qualquer
-concorrente.
+- Não copiar código, identidade visual ou ativos proprietários do Kribrum ou de qualquer concorrente.
 - Agentes devem operar com least privilege e saídas estruturadas.
 - Toda operação sensível deve gerar audit log.
 - Não pedir confirmação para decisões técnicas reversíveis já orientadas por este book.
 
-ARQUITETURA FUNCIONAL
+ARQUITETURA FUNCIONAL         Engine
 1. Listening/Data Engine
 2. Extraction Engine
 3. Enrichment Engine
-4. Analytics Engine
-5. Knowledge Graph
-6. Intelligence Engine
-7. AI Copilot
-8. Action Engine
+4. Investigation / Transform
+5. Analytics Engine
+6. Knowledge Graph
+7. Evidence & Cases Engine
+8. Intelligence Engine
+9. AI Copilot
+10. Action Engine
 
 MVP PRIORITÁRIO
-Workspace/RBAC, Projects, Monitors, Web/News + uploads, search, deduplication, Entity
-Extraction, Company Intelligence/CNPJ, PNCP, sentiment by entity, event clustering, Extraction
-Studio, dashboards, alerts, exports e Copilot com evidências.
+Workspace/RBAC, Projects, Monitors, Web/News + uploads, search, deduplication, Entity Extraction, Company
+Intelligence/CNPJ, PNCP, sentiment by entity, event clustering, Extraction Studio, dashboards, alerts, exports e
+Copilot com evidências. Preparar desde o início os contratos para Transform Registry, provenance e Case/Evidence,
+mesmo quando a interface investigativa completa entrar em fase posterior.
+
+INVESTIGATION ENGINE
+- Transform é contrato versionado: input types, output types, provider, legal scope, auth, rate limit, cost,
+cache, confidence e evidence policy.
+- Playbooks combinam Transforms com limites de profundidade, quantidade de nós, tempo, custo e condição de parada.
+- Toda aresta do grafo deve possuir evidence_ids e provenance_path.
+- Distinguir ausência de resultado de coleta parcial; registrar expected_count, actual_count e coverage_ratio
+quando a fonte permitir.
+- Nenhum Transform deve contornar autenticação, termos, paywall ou controles de acesso.
 
 STACK DE REFERÊNCIA
-Next.js/React/TypeScript; PostgreSQL; OpenSearch; ClickHouse quando volume justificar;
-Python/FastAPI para IA; Redis; storage S3; filas; OpenTelemetry; modular monolith + workers
-inicialmente.
+Next.js/React/TypeScript; PostgreSQL; OpenSearch; ClickHouse quando volume justificar; Python/FastAPI para IA;
+Redis; storage S3; filas; OpenTelemetry; modular monolith + workers inicialmente.
 
 MODO DE TRABALHO                                       permissão  desnecessária.
 1. Audite o repositório e a arquitetura existente.
@@ -1349,24 +1714,25 @@ MODO DE TRABALHO                                       permissão  desnecessári
 12. Avance para a próxima tarefa lógica sem solicitar
 
 PADRÃO DE DADOS
-Toda extração deve conter: field_type, value_raw, value_normalized, source_content_id,
-evidence_span, extractor/model version, confidence, verified, timestamps.
-Toda conclusão de agente deve conter: status, data, evidence_refs, confidence, assumptions,
-policy_flags, next_actions, trace_id.
+Toda extração deve conter: field_type, value_raw, value_normalized, source_content_id, evidence_span,
+extractor/model version, confidence, verified, timestamps.
+Toda conclusão de agente deve conter: status, data, evidence_refs, confidence, assumptions, policy_flags,
+next_actions, trace_id.
 
 POLÍTICA DE FONTES
-Cada ConnectorDescriptor deve registrar provider, source_type, auth_mode, rate_limit,
-allowed_fields, collection_method, legal/compliance notes, retention, parser version e health
-status.
+Cada ConnectorDescriptor deve registrar provider, source_type, auth_mode, rate_limit, allowed_fields,
+collection_method, legal/compliance notes, retention, parser version e health status.
 
-                                                                                        CSI Brasil | 37
+QUALIDADE
+Não considerar concluído enquanto não houver teste, autorização, evidência, auditabilidade e tratamento de erro
+compatíveis com o risco do módulo.
+
+RESULTADO ESPERADO
+Um produto utilizável, modular, documentado, observável e seguro, preparado para evoluir para multimodalidade,
+graph intelligence avançado, mobile e enterprise.
+
+                                                                                                       CSI Brasil | 47
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
-     QUALIDADE
-     Não considerar concluído enquanto não houver teste, autorização, evidência, auditabilidade e
-     tratamento de erro compatíveis com o risco do módulo.
-     RESULTADO ESPERADO
-     Um produto utilizável, modular, documentado, observável e seguro, preparado para evoluir para
-     multimodalidade, graph intelligence avançado, mobile e enterprise.
 
 Primeiro comando recomendado ao Claude
 
@@ -1376,7 +1742,7 @@ Primeiro comando recomendado ao Claude
      API, UI, autorização, testes e documentação. Continue autonomamente enquanto os requisitos
      estiverem claros e reversíveis.
 
-                                                                                                                                    CSI Brasil | 38
+                                                                                                                                    CSI Brasil | 48
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 ANEXO A
@@ -1429,67 +1795,55 @@ Documentação/licença     4                                                   
 
 Classificação por componente   Critério
 
- Decisão
+ Decisão                       Entra praticamente como está; possui testes, licença
+ REUTILIZAR                    adequada e encaixa nos contratos CSI.
 
-REUTILIZAR                     Entra praticamente como está; possui testes, licença
-ADAPTAR                        adequada e encaixa nos contratos CSI.
-
-                               Base útil, mas precisa adequar schemas, segurança, multi-
-                               tenancy ou observabilidade.
-
-                                                                                                               CSI Brasil | 39
+                                                                                                               CSI Brasil | 49
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
 Decisão     Critério
+ADAPTAR
+SUBSTITUIR  Base útil, mas precisa adequar schemas, segurança, multi-
+CRIAR       tenancy ou observabilidade.
 
-SUBSTITUIR  Resolve parcialmente, porém cria risco/complexidade
-CRIAR       maior do que reconstruir.
+            Resolve parcialmente, porém cria risco/complexidade
+            maior do que reconstruir.
 
             Capacidade inexistente ou incompatível com os requisitos
             CSI.
 
 Integração alvo
 
-Se aprovado, o awave-agents deve ocupar a camada de coordenação de agentes, não o Data Engine nem
-o banco central. Os dados oficiais, evidências, entidades, scores e políticas continuam pertencendo ao
-core CSI Brasil.
+Se aprovado, o awave-agents pode ocupar a camada de coordenação de agentes e eventualmente
+orquestrar Playbooks, mas não deve substituir o Transform Registry, o Data Engine, o Evidence Vault
+nem o banco central. Dados oficiais, entidades, relações, evidências, scores e políticas continuam
+pertencendo ao core CSI Brasil. Cada ação do agente sobre o Investigation Engine deve usar contratos
+tipados e auditáveis.
 
-                                                                                        CSI Brasil | 40
+                                                                                        CSI Brasil | 50
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
-
 ANEXO B
 
 Glossário técnico
 
 Termo              Definição
-
-ABAC               Attribute-Based Access Control. Autorização baseada em
-                   atributos.
-BM25
+ABAC
+                   Attribute-Based Access Control. Autorização baseada em
+BM25               atributos.
 Canonical URL      Algoritmo clássico de relevância para busca textual.
-Crisis Score
-Entity Resolution  URL definida como referência principal para um conteúdo.
-
-Evidence           Score explicável de risco/crise.
-
-Knowledge Graph    Processo de decidir se menções diferentes representam a
-NER                mesma entidade.
-
-OSINT              Referência verificável que sustenta uma extração ou
-                   conclusão.
-RBAC
-Stance             Grafo de entidades e relações com proveniência.
-Workspace
+Crisis Score       URL definida como referência principal para um conteúdo.
+Entity Resolution  Score explicável de risco/crise.
+                   Processo de decidir se menções diferentes representam a
+Evidence           mesma entidade.
+                   Referência verificável que sustenta uma extração ou
+Knowledge Graph    conclusão.
+NER                Grafo de entidades e relações com proveniência.
                    Named Entity Recognition - identificação de entidades no
-                   texto.
-
+OSINT              texto.
                    Open Source Intelligence - inteligência produzida a partir
-                   de fontes abertas, dentro de finalidade e acesso legítimos.
-
-                   Role-Based Access Control. Autorização baseada em papéis.
-
-                   Posição de um conteúdo em relação a uma entidade/tema.
-
+RBAC               de fontes abertas, dentro de finalidade e acesso legítimos.
+Stance             Role-Based Access Control. Autorização baseada em papéis.
+Workspace          Posição de um conteúdo em relação a uma entidade/tema.
                    Tenant/ambiente do cliente dentro do CSI Brasil.
 
 Referências públicas usadas na concepção
@@ -1506,12 +1860,12 @@ abertos
 Receita Federal - Cadastros/CNPJ: https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/dados-
 abertos/cadastros
 PNCP - Dados Abertos: https://www.gov.br/pncp/pt-br/acesso-a-informacao/dados-abertos
-CVM - Dados Abertos: https://www.gov.br/cvm/pt-br/acesso-a-informacao-cvm/dados-abertos/portal-
-dados-abertos
 
-                                                                                        CSI Brasil | 41
+                                                                                        CSI Brasil | 51
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 
+CVM - Dados Abertos: https://www.gov.br/cvm/pt-br/acesso-a-informacao-cvm/dados-abertos/portal-
+dados-abertos
 CVM - Plano de Dados Abertos 2026-2028: https://www.gov.br/cvm/pt-br/assuntos/noticias/2026/cvm-
 publica-plano-de-dados-abertos-2026-2028
 ANPD - Guia de Legítimo Interesse: https://www.gov.br/anpd/pt-br/centrais-de-conteudo/materiais-
@@ -1520,20 +1874,35 @@ guia_orientativo_hipoteses_legais_tratamento_de_dados_pessoais_legitimo_interess
 Buzzmonitor - Social Listening: https://buzzmonitor.com/social-listening/
 Zeeng - Benchmarking: https://zeeng.com.br/zeeng-benchmarking/
 Cortex - Reputação nas Mídias: https://www.cortex-intelligence.com/brand/reputacao-nas-midias
+Maltego - visão de produtos e planos:
+https://docs.maltego.com/en/support/solutions/articles/15000036759-maltego-products-and-plans
+Maltego Graph - Community Edition e recursos de link analysis/importação/exportação:
+https://docs.maltego.com/en/support/solutions/articles/15000018947-what-is-maltego-graph-community-
+edition-ce-
+Maltego Data - Data Pass e Connectors:
+https://docs.maltego.com/en/support/solutions/articles/15000058711-data-pass-and-connectors-for-
+maltego-graph
+Maltego Machines SDK - workflows reutilizáveis:
+https://docs.maltego.com/en/support/solutions/articles/15000062348-machines-sdk-
+Maltego Transforms SDK - referência de API:
+https://docs.maltego.com/en/support/solutions/articles/15000062354-sdk-api-reference
+Maltego Standard Entities - catálogo de entidades:
+https://docs.maltego.com/en/support/solutions/articles/15000062357-standard-entities-overview
 As referências servem para benchmark funcional, dados oficiais, contexto de mercado e governança. O
 CSI Brasil deve manter implementação independente e revisar periodicamente termos, APIs, licenças,
 políticas de retenção e legislação aplicável.
 
-                                                                                                                                    CSI Brasil | 42
+                                                                                                                                    CSI Brasil | 52
 CSI BRASIL | Plataforma Brasileira de Inteligência Corporativa, Mídia e Fontes Abertas
 ENCERRAMENTO
 
 Direção final do projeto CSI Brasil
 
 O CSI Brasil deve começar menor que a visão final, mas com fundações que não precisem ser
-descartadas. O MVP precisa provar três diferenciais: (1) monitoramento útil, (2) extração estruturada
-com evidência e (3) enriquecimento brasileiro. A segunda onda adiciona investigação, graph intelligence
-e IA multiagente. Multimodalidade e mobile entram quando o core já estiver confiável.
+descartadas. O MVP precisa provar monitoramento útil, extração estruturada com evidência e
+enriquecimento brasileiro. Em seguida, o Investigation Engine adiciona Transforms, Playbooks, Graph
+Workspace, Data Lineage e Cases; a camada de inteligência aplica scores, narrativas e Copilot sobre esse
+conjunto verificável. Multimodalidade e mobile entram quando o core já estiver confiável.
 
   NORTE DO PRODUTO
   O melhor resultado do CSI Brasil não é "encontrar mais dados". É transformar dados legítimos e
@@ -1541,14 +1910,15 @@ e IA multiagente. Multimodalidade e mobile entram quando o core já estiver conf
 
 Próxima ação recomendada
 
-15. Entregar este book ao Claude.
-16. Executar auditoria do repositório atual e do awave-agents.
-17. Gerar Gap Map do MVP.
-18. Implementar a primeira fatia vertical: Workspace -> Monitor -> Coleta Web/News -> Busca ->
+1. Entregar este book ao Claude.
+2. Executar auditoria do repositório atual e do awave-agents, verificando se pode orquestrar
+agentes/Playbooks sem assumir responsabilidades do core.
+3. Gerar Gap Map do MVP.
+4. Implementar a primeira fatia vertical: Workspace -> Monitor -> Coleta Web/News -> Busca -> Extração
+-> Evidência -> Dashboard.
+5. Adicionar CNPJ/PNCP, Company Intelligence e o Transform Registry inicial.
+6. Implementar os Playbooks iniciais e iniciar avaliação quantitativa de precisão, cobertura e qualidade
+das relações antes de expandir fontes e agentes.
 
-     Extração -> Evidência -> Dashboard.
-19. Adicionar CNPJ/PNCP e Company Intelligence.
-20. Iniciar avaliação quantitativa de precisão antes de expandir fontes e agentes.
-
-                                                                                                                                    CSI Brasil | 43
+                                                                                                                                    CSI Brasil | 53
 
