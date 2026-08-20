@@ -204,7 +204,16 @@ _Vazio — nascem na Fase 1._
 
 ## 12. As rotas de API
 
-_Vazio._
+| Rota | Como se defende | O que faz |
+|---|---|---|
+| `GET /api/diagnostico/cnpj` | **Segredo** `DIAGNOSTICO_SECRET` no cabecalho. **Sem o segredo configurado responde 503** — fechada, nao aberta | Consulta um CNPJ pelos provedores e devolve o resultado normalizado, o provedor que atendeu, o tempo e **quem falhou antes**. Nao grava nada |
+
+⚠️ **Por que ela existe:** a maquina de desenvolvimento nao alcanca os
+provedores. Sem medir do lugar onde o codigo roda, a unica afirmacao possivel
+seria "esta testado na logica" — que nao e o mesmo que "funciona".
+
+⚠️ **Rota de diagnostico nao grava.** Diagnostico que escreve no banco vira dado
+de teste em producao.
 
 ---
 

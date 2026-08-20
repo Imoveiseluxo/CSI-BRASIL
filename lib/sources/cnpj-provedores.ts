@@ -27,14 +27,21 @@ export type Provedor = {
 
 export const PROVEDORES_CNPJ: readonly Provedor[] = [
   {
-    nome: "BrasilAPI - CNPJ",
-    custo: "gratuito",
-    url: (cnpj) => `https://brasilapi.com.br/api/cnpj/v1/${cnpj}`,
-  },
-  {
+    // ⚠️ PRIMEIRO por medição, não por preferência. Em 19/08/2026, medido pelo
+    // deploy de produção: a Minha Receita responde em 119–246 ms, e a BrasilAPI
+    // devolve **HTTP 403** para requisição vinda da infraestrutura da Vercel —
+    // bloqueio de datacenter. Deixar a BrasilAPI na frente custaria uma
+    // requisição perdida em TODA consulta.
     nome: "Minha Receita",
     custo: "gratuito",
     url: (cnpj) => `https://minhareceita.org/${cnpj}`,
+  },
+  {
+    // Mantida como alternativa: funciona de outras redes, e o dia em que a
+    // Minha Receita cair é justamente quando ela importa.
+    nome: "BrasilAPI - CNPJ",
+    custo: "gratuito",
+    url: (cnpj) => `https://brasilapi.com.br/api/cnpj/v1/${cnpj}`,
   },
   // ⚠️ Provedor pago (CDL e outros) entra AQUI quando houver contrato — e antes
   // disso a cláusula de finalidade precisa estar lida e registrada. Ver

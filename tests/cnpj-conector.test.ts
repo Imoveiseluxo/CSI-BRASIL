@@ -42,11 +42,12 @@ describe("consultaCnpj", () => {
 
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.coleta.provedor.nome).toBe("BrasilAPI - CNPJ");
+    expect(r.coleta.provedor.nome).toBe("Minha Receita");
     expect(r.coleta.conteudo).toEqual(RESPOSTA);
     expect(r.coleta.hash).toMatch(/^sha256:[0-9a-f]{64}$/);
     expect(f.chamadas).toHaveLength(1);
-    expect(f.chamadas[0]).toContain("brasilapi.com.br");
+    expect(f.chamadas[0]).toContain("minhareceita.org");
+    expect(r.coleta.recusasAnteriores).toEqual([]);
   });
 
   /**
@@ -73,8 +74,12 @@ describe("consultaCnpj", () => {
 
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.coleta.provedor.nome).toBe("Minha Receita");
+    expect(r.coleta.provedor.nome).toBe("BrasilAPI - CNPJ");
     expect(f.chamadas).toHaveLength(2);
+    // ⚠️ A falha do primeiro não pode desaparecer só porque o segundo atendeu:
+    // provedor fora do ar há meses ficaria invisível e o painel, verde.
+    expect(r.coleta.recusasAnteriores).toHaveLength(1);
+    expect(r.coleta.recusasAnteriores[0]).toContain("429");
   });
 
   /**
@@ -89,9 +94,9 @@ describe("consultaCnpj", () => {
 
     expect(r.ok).toBe(false);
     if (r.ok) return;
-    expect(r.motivo).toContain("BrasilAPI");
-    expect(r.motivo).toContain("503");
     expect(r.motivo).toContain("Minha Receita");
+    expect(r.motivo).toContain("503");
+    expect(r.motivo).toContain("BrasilAPI");
   });
 
   it("não segue redirecionamento — destino conferido não pode ser trocado no caminho", async () => {

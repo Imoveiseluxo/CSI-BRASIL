@@ -7,6 +7,60 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 23h05 — a consulta real funciona, e ela revelou um provedor falhando em silêncio
+
+**Pendência 22 fechada.** A máquina de desenvolvimento não alcança os provedores, então medi
+**pelo deploy da Vercel** — do lugar onde o código realmente roda.
+
+### A rota de diagnóstico
+
+`app/api/diagnostico/cnpj/route.ts`, **protegida por segredo**. Rota que dispara requisição
+externa sem autenticação é abuso esperando acontecer: qualquer um consultaria em nosso nome,
+gastando nossa cota e sujando nossa reputação junto ao provedor.
+
+⚠️ **Sem `DIAGNOSTICO_SECRET` configurado, ela responde 503 — fechada, não aberta.** Falhar
+fechado é a única opção defensável: configuração ausente não pode virar porta.
+
+⚠️ **Ela não grava nada.** É medição, não ingestão — diagnóstico que escreve no banco vira
+dado de teste em produção.
+
+### A medição
+
+| Sem segredo | Com segredo |
+|---|---|
+| **HTTP 401** | **HTTP 200**, empresa normalizada, `erro_normalizacao: null` |
+
+Três empresas reais resolvidas (Petrobras, Banco do Brasil, Bradesco), **97–246 ms**. E CNPJ
+inválido devolveu `levou_ms: 0` — **nunca saiu da máquina**, como o teste com `fetch`
+controlado prometia.
+
+### O achado: a BrasilAPI falhava sempre, e ninguém veria
+
+A primeira medição mostrou que quem respondia era a **Minha Receita — o segundo provedor**. O
+primeiro estava falhando em toda consulta, e o resultado chegava certo assim mesmo.
+
+**Isso é exatamente a classe de erro que me custou dois dias hoje de manhã no outro projeto:**
+o sistema funcionando pelo caminho alternativo, o painel verde, e a falha invisível.
+
+Acrescentei `recusasAnteriores` ao resultado da coleta e um `logError` quando alguém é pulado.
+Aí a causa apareceu: **`BrasilAPI - CNPJ: HTTP 403`** — ela recusa requisição vinda da
+infraestrutura da Vercel, bloqueio de datacenter.
+
+**Conserto: inverter a ordem**, com o motivo escrito no código. Insistir num provedor que
+sempre devolve 403 custava uma requisição perdida em **toda** consulta. A BrasilAPI fica como
+alternativa — funciona de outras redes, e o dia em que a Minha Receita cair é justamente
+quando ela importa.
+
+**Medição depois da troca:** 97–184 ms, `recusas: []`.
+
+⚠️ **Uma sutileza que quase me enganou:** a primeira consulta após o deploy ainda trouxe a
+recusa antiga. Era propagação — a chamada pegou a versão anterior. **Repeti até ficar
+consistente**, em vez de aceitar a primeira leitura.
+
+**Verificação:** 50 testes verdes · `tsc` 0 erros · consulta real medida em produção.
+
+---
+
 ## 19/08/2026, 22h50 — o conector, e a trava que precisava existir antes dele
 
 **Tarefa 5 da Fase 2**, com a decisão do dono incorporada: **todas as fontes gratuitas agora,

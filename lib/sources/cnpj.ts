@@ -20,6 +20,15 @@ export type Coleta = {
   conteudo: unknown;
   /** O que permite afirmar depois que o artefato não mudou. */
   hash: string;
+  /**
+   * Quem falhou ANTES deste provedor responder, e por quê.
+   *
+   * ⚠️ Existe porque provedor que falha em silêncio é invisível. Sem isto, o
+   * primeiro da lista podia estar fora do ar há meses e ninguém saberia — a
+   * coleta funcionaria pelo segundo, e o painel ficaria verde. É a mesma classe
+   * de erro que no projeto anterior manteve uma campanha parada dois dias.
+   */
+  recusasAnteriores: string[];
 };
 
 export type ResultadoColeta = { ok: true; coleta: Coleta } | { ok: false; motivo: string };
@@ -69,9 +78,24 @@ export async function consultaCnpj(entrada: string): Promise<ResultadoColeta> {
         continue;
       }
       const conteudo = (await r.json()) as unknown;
+      if (recusas.length > 0) {
+        // Falha de provedor não pode virar sucesso mudo: ela vai para o log
+        // mesmo quando outro respondeu.
+        logError(
+          "sources.cnpj.provedor_pulado",
+          new Error(`respondeu ${provedor.nome} depois de: ${recusas.join(" | ")}`),
+        );
+      }
       return {
         ok: true,
-        coleta: { cnpj, provedor, url, conteudo, hash: hashDoConteudo(conteudo) },
+        coleta: {
+          cnpj,
+          provedor,
+          url,
+          conteudo,
+          hash: hashDoConteudo(conteudo),
+          recusasAnteriores: [...recusas],
+        },
       };
     } catch (err) {
       logError("sources.cnpj.consulta", err);
