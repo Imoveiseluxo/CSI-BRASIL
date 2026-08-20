@@ -210,9 +210,16 @@ _Vazio._
 
 ## 13. As tabelas do banco
 
-⚠️ **As cinco abaixo estão ESCRITAS e NÃO APLICADAS** (19/08/2026). Não existe
-projeto Supabase. **Este mapa descreve o repositório, não o banco** — e essa
-diferença é a pendência 19.
+✅ **APLICADAS em 19/08/2026, 21h50** no projeto `CSI Brasil`
+(`mmgucspxrfxdcztkrklb`, região `sa-east-1`), com `pgvector` 0.8.2.
+
+**Conferido no banco, não presumido:** RLS `ligada=true` e **`forcada=false`** nas
+cinco; helpers `is_org_member` e `has_org_role` com `security definer` **e**
+`row_security=off`; `query_versions` sem policy de UPDATE nem DELETE.
+
+⚠️ **E a RLS foi provada cortando**, que é diferente de existir: com duas
+organizações e dois usuários, cada sessão simulada dentro do banco enxergou
+**só o próprio projeto**. O cenário de teste foi apagado em seguida.
 
 | Tabela | Classe | Área | Quem escreve nela |
 |---|---|---|---|

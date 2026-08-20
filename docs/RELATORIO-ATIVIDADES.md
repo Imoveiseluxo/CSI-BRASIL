@@ -7,6 +7,66 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 21h55 — o banco existe, e a RLS foi PROVADA cortando
+
+**Decisão do dono:** criar o projeto Supabase — na organização **Imoveiseluxo's Org**, depois
+de eu apresentar o custo (~US$ 10/mês por projeto adicional no plano Pro; as duas orgs estão
+em Pro).
+
+**Projeto:** `CSI Brasil`, ref `mmgucspxrfxdcztkrklb`, região **sa-east-1 (São Paulo)** —
+escolhida porque o produto é inteligência corporativa **brasileira** e latência de banco pesa.
+
+**Aplicado, uma coisa de cada vez e parando no primeiro erro** (aplicar em lote esconde qual
+falhou e deixa o banco num estado que ninguém sabe descrever): extensão `pgvector`, depois
+`0001_organizations.sql`, `0002_projects.sql` e `0003_monitors.sql`.
+
+### A conferência estrutural — medida, não presumida
+
+| O que | Resultado |
+|---|---|
+| RLS nas 5 tabelas | `ligada=true` em todas, **`forcada=false`** — o `FORCE` que causa recursão não entrou |
+| `is_org_member` e `has_org_role` | `definer=true` **e** `search_path=public, row_security=off` — os **dois** necessários |
+| pgvector | versão **0.8.2** instalada |
+| `query_versions` | policies **só de SELECT e INSERT** — sem UPDATE, sem DELETE. Histórico imutável |
+
+### A prova que o plano exigia: a RLS realmente corta?
+
+Criei duas organizações, dois usuários e um projeto em cada; simulei a sessão de cada um
+**dentro do banco** (`set local role authenticated` + `request.jwt.claims`, que é como o
+PostgREST avalia — rodar como superusuário ignora a RLS e daria verde falso):
+
+```
+verdade no banco (superusuário): 2 projetos
+usuário da Org A: vê 1 -> Projeto da A
+usuário da Org B: vê 1 -> Projeto da B
+```
+
+**E limpei tudo em seguida:** 0 projetos, 0 organizações, 0 usuários. **Banco novo não nasce
+com dado de teste** — dado de teste em base nova é o que depois vira "esse registro é real?"
+seis meses adiante.
+
+### O site ligado ao banco
+
+`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` cadastradas na Vercel nos três
+ambientes (6 variáveis), e **republicado** para valerem — variável cadastrada só passa a
+existir no deploy seguinte. https://csi-brasil.vercel.app continua respondendo **200**.
+
+⚠️ **A senha do banco está em `C:\Users\Windows\senha-banco-csi-brasil.txt` e é a única
+cópia.** O Supabase não a mostra de novo — só permite redefinir. Guardar em gerenciador de
+senhas e apagar o arquivo.
+
+### O que isto fecha, e o que não
+
+**Fecha as pendências 19 e 20:** as migrations deixaram de ser texto, e o site deixou de estar
+no ar sem as variáveis do banco. **A Fase 1 está concluída de verdade** — as três tarefas que
+estavam em amarelo saíram de lá.
+
+**Não fecha o produto.** Continua sem autenticação configurada, sem tela de workspace e sem
+uma linha de dado real. O que existe agora é fundação **provada**, que é diferente de
+fundação escrita.
+
+---
+
 ## 19/08/2026, 21h40 — publicado na Vercel
 
 **Pedido do dono:** publicar o CSI Brasil agora.

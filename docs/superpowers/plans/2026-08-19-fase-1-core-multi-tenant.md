@@ -1,24 +1,36 @@
 # Fase 1 — Core Multi-Tenant · Plano de Implementação
 
-## 📍 Estado em 19/08/2026, 21h30
+## 📍 Estado em 19/08/2026, 21h55 — FASE 1 CONCLUÍDA
 
 | Tarefa | Estado |
 |---|---|
 | **1 — A trava que impede tabela sem tenant** | ✅ **concluída** — 3 testes, provada com migration errada de propósito |
 | **1b — A trava da rastreabilidade** | ✅ **concluída** — contrato + 4 testes, provada nos 4 casos |
-| **2 — Organizações, membros e helpers** | 🟡 **SQL escrita, NÃO aplicada** |
+| **2 — Organizações, membros e helpers** | ✅ **concluída** — aplicada e conferida no banco |
 | **3 — A matriz de papéis** | ✅ **concluída** — `lib/auth/permissions.ts` + 7 testes, incluindo "negar é o padrão" |
-| **4 — Projetos** | 🟡 **SQL escrita, NÃO aplicada** |
-| **5 — Monitores e versões de consulta** | 🟡 **SQL escrita, NÃO aplicada** |
+| **4 — Projetos** | ✅ **concluída** — aplicada, e a RLS provada cortando entre duas organizações |
+| **5 — Monitores e versões de consulta** | ✅ **concluída** — aplicada; `query_versions` sem policy de UPDATE/DELETE, conferido |
 
-⚠️ **As três tarefas em amarelo não estão concluídas**, e o plano é explícito sobre por quê:
-cada uma tem passo de **aplicar e conferir no banco** — *"conferir que a RLS realmente
-corta"*, com dois usuários de organizações diferentes. **Não existe projeto Supabase.**
+**Banco:** projeto `CSI Brasil` (`mmgucspxrfxdcztkrklb`), região `sa-east-1`, criado em
+19/08/2026 às 21h50. `pgvector` 0.8.2 instalado.
 
-O dono assumiu essa dívida de propósito em 21h14 (*"escreve as migrations agora, eu aplico
-depois"*). Ela está na **pendência 19**, com as três conferências obrigatórias do dia da
-aplicação. Enquanto durar, **o repositório descreve um banco que não existe** — que é
-exatamente o estado que no projeto anterior deixou um alerta de segurança no ar por dias.
+**A conferência que fechou a fase não foi o SQL rodar sem erro.** Com duas organizações,
+dois usuários e um projeto em cada, a sessão de cada um foi simulada dentro do banco
+(`set local role authenticated` + `request.jwt.claims`, que é como o PostgREST avalia —
+superusuário ignora a RLS e daria verde falso):
+
+```
+verdade no banco (superusuário): 2 projetos
+usuário da Org A: vê 1 -> Projeto da A
+usuário da Org B: vê 1 -> Projeto da B
+```
+
+O cenário foi apagado em seguida: 0 projetos, 0 organizações, 0 usuários. **Banco novo não
+fica com dado de teste.**
+
+Conferido também: RLS `ligada=true` e **`forcada=false`** nas cinco tabelas, os dois helpers
+com `security definer` **e** `row_security=off`, e `query_versions` **sem policy de UPDATE ou
+DELETE** — histórico que não se reescreve.
 
 **Também extraído nesta fase, além do plano:** o esqueleto do projeto e o encanamento de
 acesso (`lib/supabase/`, `lib/logger.ts`, `lib/orgs/queries.ts`, `lib/auth/guards.ts`), tirado
