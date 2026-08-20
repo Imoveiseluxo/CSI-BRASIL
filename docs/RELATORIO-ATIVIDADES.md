@@ -7,6 +7,56 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 21h30 — Fase 1 fechada até onde dá sem banco
+
+**Fechamento da tarefa.** O mapa e o plano passaram a dizer o estado real, que é o passo que
+faltava para a tarefa estar concluída — e não só "o código está lá".
+
+**O que entrou agora:**
+
+- **Mapa, seção 13** — as cinco tabelas registradas com a **classe** de cada uma e, sobretudo,
+  a coluna **"quem escreve nela"**. Hoje ela está inteira em *"ainda não existe"*, de
+  propósito: é assim que se vê que nenhuma tela preenche nada ainda. No projeto anterior,
+  três campos existiam sem ninguém escrever neles, e painéis e alertas ficaram pendurados em
+  zero por semanas.
+- **Plano da Fase 1** — quadro de estado no topo, separando o que está **concluído** do que
+  está **escrito e não aplicado**. Sem isso, quem abrir o plano amanhã lê seis tarefas e
+  supõe seis prontas.
+
+### Estado da Fase 1
+
+| Tarefa | Estado |
+|---|---|
+| 1 — Trava do tenant | ✅ concluída, provada quebrando de propósito |
+| 1b — Trava da rastreabilidade | ✅ concluída, provada nos 4 casos |
+| 3 — Matriz de papéis | ✅ concluída, 7 testes |
+| 2, 4, 5 — Migrations | 🟡 **escritas, NÃO aplicadas** |
+
+**Verificação final:** `tsc --noEmit` **0 erros** · **14 testes verdes** · `biome check` limpo
+· `next build` completo.
+
+### O que a Fase 1 NÃO entregou, e é importante não confundir
+
+Não há banco, migration aplicada, autenticação configurada, tela de workspace nem uma linha
+de produto navegável. **O que existe é a fundação e as duas travas** — o que impede a próxima
+tabela de nascer errada.
+
+**Três coisas destravam o resto, e nenhuma é código:**
+
+1. **Projeto Supabase** (PostgreSQL + pgvector) — sem ele as três migrations continuam sendo
+   texto, e a pendência 19 continua aberta.
+2. **Decisão 2** — on-premise ou só operado por você. Muda o que pode ser usado como
+   referência.
+3. **Cláusula de finalidade do contrato com a CDL** (pendência 18), se CPF for entrar algum
+   dia.
+
+**O que eu afirmei errado hoje neste projeto, e corrigi:** disse que consulta de CPF *"ou é
+credencial restrita, ou é comércio irregular"*, tratando o primeiro caminho como exótico —
+existe integração com a CDL, e ela é a via legítima. Corrigido às 20h57, com o ponto que não
+muda: credencial não é base legal.
+
+---
+
 ## 19/08/2026, 21h20 — as três migrations escritas, e uma falha na minha própria trava
 
 **Decisão do dono:** *"escreve as migrations agora, eu aplico depois"* — dívida assumida

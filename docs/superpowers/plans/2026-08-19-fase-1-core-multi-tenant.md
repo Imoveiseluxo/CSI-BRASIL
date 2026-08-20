@@ -1,5 +1,31 @@
 # Fase 1 — Core Multi-Tenant · Plano de Implementação
 
+## 📍 Estado em 19/08/2026, 21h30
+
+| Tarefa | Estado |
+|---|---|
+| **1 — A trava que impede tabela sem tenant** | ✅ **concluída** — 3 testes, provada com migration errada de propósito |
+| **1b — A trava da rastreabilidade** | ✅ **concluída** — contrato + 4 testes, provada nos 4 casos |
+| **2 — Organizações, membros e helpers** | 🟡 **SQL escrita, NÃO aplicada** |
+| **3 — A matriz de papéis** | ✅ **concluída** — `lib/auth/permissions.ts` + 7 testes, incluindo "negar é o padrão" |
+| **4 — Projetos** | 🟡 **SQL escrita, NÃO aplicada** |
+| **5 — Monitores e versões de consulta** | 🟡 **SQL escrita, NÃO aplicada** |
+
+⚠️ **As três tarefas em amarelo não estão concluídas**, e o plano é explícito sobre por quê:
+cada uma tem passo de **aplicar e conferir no banco** — *"conferir que a RLS realmente
+corta"*, com dois usuários de organizações diferentes. **Não existe projeto Supabase.**
+
+O dono assumiu essa dívida de propósito em 21h14 (*"escreve as migrations agora, eu aplico
+depois"*). Ela está na **pendência 19**, com as três conferências obrigatórias do dia da
+aplicação. Enquanto durar, **o repositório descreve um banco que não existe** — que é
+exatamente o estado que no projeto anterior deixou um alerta de segurança no ar por dias.
+
+**Também extraído nesta fase, além do plano:** o esqueleto do projeto e o encanamento de
+acesso (`lib/supabase/`, `lib/logger.ts`, `lib/orgs/queries.ts`, `lib/auth/guards.ts`), tirado
+do Bahia Realty arquivo por arquivo, sem tocar naquele projeto.
+
+---
+
 > **Para quem for executar:** use `superpowers:subagent-driven-development` ou
 > `superpowers:executing-plans`. Os passos usam caixinha (`- [ ]`) para acompanhamento.
 > **Pré-requisito:** a Fase 0 (`2026-08-19-fase-0-fundacao-governada.md`) precisa estar

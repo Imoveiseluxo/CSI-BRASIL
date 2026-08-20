@@ -210,7 +210,26 @@ _Vazio._
 
 ## 13. As tabelas do banco
 
-_Vazio — as primeiras nascem na Fase 1 (organizations, memberships) e Fase 2 (source,
-connector, content)._
+⚠️ **As cinco abaixo estão ESCRITAS e NÃO APLICADAS** (19/08/2026). Não existe
+projeto Supabase. **Este mapa descreve o repositório, não o banco** — e essa
+diferença é a pendência 19.
+
+| Tabela | Classe | Área | Quem escreve nela |
+|---|---|---|---|
+| `organizations` | `configuracao` | `lib/orgs/` | criação de workspace (ainda não existe) |
+| `memberships` | `configuracao` | `lib/orgs/` | convite e gestão de membros (ainda não existe) |
+| `projects` | `configuracao` | `lib/projects/` | o operador, pela tela de projetos (ainda não existe) |
+| `monitors` | `configuracao` | `lib/monitors/` | o operador (ainda não existe) |
+| `query_versions` | `configuracao` | `lib/monitors/` | o operador, **só INSERT** — histórico não se reescreve |
+
+⚠️ **A coluna "quem escreve nela" não é enfeite, e hoje ela está toda em "ainda
+não existe" de propósito.** No projeto anterior, três campos de atendimento
+existiam, nenhuma linha de código escrevia neles, e painéis, alertas e e-mails
+automáticos ficaram pendurados em número que nunca saiu de zero — por semanas.
+**Tabela cuja coluna alimenta número na tela precisa ter aqui quem a preenche.**
+
+⚠️ **Nenhuma delas é `conhecimento`** — todas registram o que o operador pediu.
+A primeira tabela de conhecimento nasce na Fase 2 (o documento coletado) e leva
+as 7 colunas de procedência. Ver `docs/CONTRATO-DE-PROCEDENCIA.md`.
 
 Cada tabela registra: nome, área de `lib/` que manda nela, e se tem `organization_id` + RLS.
