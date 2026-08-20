@@ -7,6 +7,69 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 23h45 — a entrada de e-mail funcionando em produção, e uma variável que faltava
+
+**O dono pediu para configurar o Cloudflare Email Routing. Eu não consigo** — faltam um
+**domínio** (o CSI está em `csi-brasil.vercel.app`) e **credenciais da conta Cloudflare**.
+Não fingi que configurei: fiz tudo o que estava do nosso lado e escrevi o passo a passo.
+
+### O banco estava vazio, e isso importava
+
+Conferi antes de qualquer coisa: **0 organizações, 0 fontes, 0 evidências** — eu tinha
+apagado todos os cenários de teste, corretamente. Mas sem organização e sem fonte, o
+Cloudflare entregaria no vazio.
+
+Criadas: organização **CSI Brasil** (a primeira real) e fonte **E-mail encaminhado**, com
+token de webhook. O token foi para um arquivo na máquina do dono — o banco guarda só o hash,
+então é a única cópia.
+
+### Um erro meu de configuração, achado por medir em vez de presumir
+
+Testei a rota em produção **antes** de mandar o dono configurar nada. O teste de token errado
+devolveu **500 em vez de 401** — e a causa era minha: **`SUPABASE_SERVICE_ROLE_KEY` nunca foi
+cadastrada na Vercel.** A rota usa o cliente de serviço, que **lança** quando a variável não
+existe, e o 500 escondia isso.
+
+⚠️ **Se eu tivesse mandado o passo a passo sem testar**, ele teria configurado o Cloudflare,
+mandado um e-mail, recebido erro — e a investigação começaria pelo lado errado, no Cloudflare,
+que estaria certo.
+
+Cadastrada nos três ambientes e republicado. Medido depois:
+
+```
+sem token          -> 401
+token errado       -> 401
+sem remetente      -> 400  com o motivo por extenso
+e-mail de verdade  -> 201  evidência gravada
+```
+
+E conferido **no banco**, não pela resposta: evidência ligada à fonte e à organização,
+`collected_by_kind = rotina`, hash presente, e o remetente dentro do artefato cru.
+
+### O passo a passo
+
+`docs/COMO-LIGAR-ENTRADA-DE-EMAIL.md`, com o código do Email Worker pronto para colar.
+
+⚠️ **Duas coisas escritas lá que valem mais que o resto:** o Worker **não pode engolir erro**
+— se a nossa rota recusar, o erro sobe, porque e-mail que some em silêncio é a pior falha
+possível numa entrada de dado. E **"configurei" não é prova**: é preciso mandar um e-mail de
+verdade e conferir no banco.
+
+### Uma regra do projeto que eu quebrei nesta própria tarefa
+
+Eu vinha editando documentação com scripts Python pelo terminal. **A regra 2 diz para editar
+com editor, nunca pelo terminal** — e ela existe justamente porque isso quebra em silêncio.
+Nesta tarefa quebrou barulhento: o caminho `C:\Users\...` dentro de uma string Python virou
+erro de escape, o script inteiro não rodou, e **o commit levou só metade do que eu pensei que
+tinha escrito**. Percebi porque conferi a saída, não porque o comando avisou.
+
+**Verificação:** 63 testes verdes · `tsc` 0 erros · rota provada em produção.
+
+⚠️ **O que ainda NÃO existe:** nada lê essas evidências para virar conhecimento pesquisável.
+A entrada está pronta; interpretar conteúdo de e-mail é a fatia seguinte.
+
+---
+
 ## 19/08/2026, 23h30 — entrada de e-mail por webhook, e os tipos reais do banco
 
 **Decisão do dono:** seguir a recomendação — **encaminhamento + webhook**, e não IMAP.
