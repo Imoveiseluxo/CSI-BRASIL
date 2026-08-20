@@ -1,12 +1,12 @@
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth/guards";
+
 /**
- * Página mínima, só para o build ter o que compilar enquanto a Fase 1 não
- * entrega o workspace. Não é a home do produto.
+ * A raiz não tem conteúdo próprio: quem está logado vai para o workspace, quem
+ * não está vai para o login. Página de "boas-vindas" sem função é tela que
+ * alguém precisa manter sem ninguém usar.
  */
-export default function Home() {
-  return (
-    <main>
-      <h1>CSI Brasil</h1>
-      <p>Fundação em construção.</p>
-    </main>
-  );
+export default async function Home() {
+  const usuario = await getCurrentUser();
+  redirect(usuario ? "/app/csi-brasil" : "/entrar");
 }

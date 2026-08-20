@@ -7,6 +7,73 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 20/08/2026, 00h05 — autenticação, a primeira tela real, e um 404 que só a medição achou
+
+**O dono abriu o site e disse "não aparece nada".** Ele estava certo do ponto de vista dele:
+a página tinha um `<h1>` e uma linha de texto, sem CSS. Era tudo o que existia de tela — o
+resto do dia foi servidor.
+
+**Construído agora:** autenticação por e-mail e senha, middleware que renova a sessão, a tela
+de workspace, e o estilo mínimo.
+
+### A tela mostra a procedência AO LADO do dado, não numa aba
+
+Cada empresa aparece com **fonte, data da coleta, confiança, quem produziu e o hash da
+evidência** — na mesma ficha. O book proíbe *"dado na tela sem origem rastreável"*, e uma
+ficha bonita com a origem escondida seria exatamente isso.
+
+⚠️ **Confiança nula mostra "não informado", nunca um número.** É a mesma regra da coluna que
+proíbe `default`: número na tela que ninguém decidiu é pior que campo vazio.
+
+### O bug que só apareceu porque medi pela web
+
+As guardas foram extraídas do Bahia Realty, onde a tela de login mora em `/login`. Aqui ela
+mora em **`/entrar`** — e o redirecionamento veio junto, apontando para uma página que **não
+existe**.
+
+**Consequência real: qualquer pessoa não logada levaria 404.** Não um erro claro, não um
+convite para entrar: 404. E `tsc`, testes e build passavam — nada disso olha para onde um
+`redirect()` aponta.
+
+Só apareceu porque testei **pela web**, como o dono usa, em vez de ler o código.
+
+Segundo achado da mesma família: `requireOrgMember` mandava para `/onboarding`, que também não
+existe. Virou `/sem-organizacao`, uma página que **explica** e oferece sair — e que
+deliberadamente **não** oferece "criar organização", porque quem libera acesso é o operador.
+
+### A trava para isso não se repetir
+
+`tests/rotas-de-redirecionamento.test.ts` lê os `redirect()` literais das guardas e confere
+que cada destino existe em `app/`.
+
+⚠️ **A primeira versão dela reprovou uma rota que existe** — não entendia segmento dinâmico
+(`/app/csi-brasil` mora em `app/app/[orgSlug]/`). **Trava com falso positivo é tão ruim quanto
+trava que não pega: ensina a ignorar vermelho.** Corrigida para resolver `[param]`, e provada
+nos dois sentidos.
+
+### Medido no ar, depois de publicar
+
+```
+/                 -> 307 -> /entrar
+/app/csi-brasil   -> 307 -> /entrar     (antes: /login, que dava 404)
+/entrar           -> 200, formulário presente
+```
+
+E a sessão de verdade: login com a senha criada devolveu token, e a RLS mostrou **exatamente
+uma organização** (`CSI Brasil`) e o papel `owner`.
+
+**Acesso do dono** em `C:\Users\Windows\acesso-csi-brasil.txt` — única cópia, para trocar no
+primeiro uso.
+
+**Verificação:** **65 testes verdes** · `tsc` 0 erros · build completo · rotas medidas em
+produção.
+
+⚠️ **O que ainda não existe:** a tela lista e consulta, mas não há busca, filtro, nem tela de
+evidência. E o estilo é mínimo de propósito — o design system é item da Fase 0 e não foi
+decidido; adotar um framework agora seria difícil de desfazer.
+
+---
+
 ## 19/08/2026, 23h45 — a entrada de e-mail funcionando em produção, e uma variável que faltava
 
 **O dono pediu para configurar o Cloudflare Email Routing. Eu não consigo** — faltam um

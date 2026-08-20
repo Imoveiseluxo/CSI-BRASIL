@@ -1,0 +1,222 @@
+/*
+ * Estilo mínimo do CSI Brasil.
+ *
+ * Sem framework de propósito: o design system é item da Fase 0 e ainda não foi
+ * decidido. Isto é o suficiente para a tela ser legível e utilizável, e é fácil
+ * de jogar fora quando o design system chegar — o contrário (adotar um
+ * framework agora) é que seria difícil de desfazer.
+ */
+
+:root {
+  color-scheme: light dark;
+  --fundo: #ffffff;
+  --texto: #14181f;
+  --fraco: #5b6472;
+  --borda: #e2e6ec;
+  --cartao: #f7f9fb;
+  --acento: #0f5c8c;
+  --erro: #a11c1c;
+  --ok: #14622f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #10141a;
+    --texto: #e8ecf2;
+    --fraco: #9aa4b2;
+    --borda: #262d38;
+    --cartao: #171d25;
+    --acento: #6cb6e8;
+    --erro: #ff8a8a;
+    --ok: #78d69b;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+}
+
+.fraco {
+  color: var(--fraco);
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+}
+
+.pagina {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+.bloco {
+  margin-top: 1.75rem;
+}
+
+.centro {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.cartao {
+  width: min(24rem, 100%);
+  background: var(--cartao);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.formulario {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+.formulario label {
+  font-size: 0.85rem;
+  color: var(--fraco);
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+.linha input {
+  flex: 1 1 16rem;
+}
+
+input {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--borda);
+  border-radius: 7px;
+  background: var(--fundo);
+  color: var(--texto);
+  font: inherit;
+  width: 100%;
+}
+
+button {
+  padding: 0.55rem 1rem;
+  border: 0;
+  border-radius: 7px;
+  background: var(--acento);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+button[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+}
+button.discreto {
+  background: transparent;
+  color: var(--fraco);
+  border: 1px solid var(--borda);
+  font-weight: 400;
+}
+
+.erro {
+  color: var(--erro);
+  font-size: 0.9rem;
+  flex-basis: 100%;
+  margin: 0.25rem 0 0;
+}
+.sucesso {
+  color: var(--ok);
+  font-size: 0.9rem;
+  flex-basis: 100%;
+  margin: 0.25rem 0 0;
+}
+
+.lista {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ficha {
+  border: 1px solid var(--borda);
+  border-radius: 9px;
+  padding: 0.85rem 1rem;
+  background: var(--cartao);
+}
+.ficha-cabeca {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.etiqueta {
+  font-size: 0.72rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  color: var(--fraco);
+}
+
+/* A procedência é parte da ficha, não um detalhe escondido. */
+.procedencia {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--borda);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-size: 0.78rem;
+  color: var(--fraco);
+}
+.procedencia .hash {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--cartao);
+  border: 1px solid var(--borda);
+  border-radius: 5px;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.85em;
+}
+
+/* Rótulo que existe para leitor de tela, invisível na tela. */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

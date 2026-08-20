@@ -21,7 +21,7 @@ export async function requireUser(): Promise<User> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/entrar");
   return user;
 }
 
@@ -40,7 +40,7 @@ export async function requireOrgMember(opts: { orgSlug: string }) {
 
   if (!vinculo) {
     const todas = await getUserOrgs(user.id);
-    if (todas.length === 0) redirect("/onboarding");
+    if (todas.length === 0) redirect("/sem-organizacao");
     redirect(`/app/${todas[0]!.organization.slug}`);
   }
 
