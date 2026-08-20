@@ -6,7 +6,7 @@
 > **Item novo entra na hora em que aparece** — não no fim da conversa. O que não está escrito
 > num lugar só volta a ser descoberto por acaso, semanas depois.
 
-**Atualizado em:** 19/08/2026, 21h55
+**Atualizado em:** 20/08/2026, 00h55
 
 ---
 
@@ -57,6 +57,7 @@
 
 | # | O quê | O que eu preciso de você |
 |---|---|---|
+| **26** | ✅ **Falso alarme, resolvido na mesma hora — nada sumiu do banco** (20/08/2026, 00h55) | Ao medir a busca vi que `companies` tem **uma linha só**, a do CNPJ do dono, e cheguei a escrever aqui que a Petrobras podia ter sumido. **Errado, e a medição derruba isso:** a tabela `evidence` guarda **duas** coletas — o e-mail de teste das 23h16 e o CNPJ do dono das 23h53 — e **nenhuma da Petrobras**. ⚠️ **O que separa as hipóteses:** se alguém tivesse apagado registros, a evidência das 23h16, que é mais antiga, teria ido junto. Ela está lá. Logo, uma linha da Petrobras **nunca existiu** — o `33.000.167/0001-01` é só o exemplo escrito na tela vazia, e o dono já tinha dito *"usei meu cnpj mesmo"*. **Nenhuma ação pendente** |
 | **21** | ✅ **RESOLVIDO 19/08 22h50 — trava de destino no lugar** | Campo controlável por quem cadastra a fonte, consumido por uma rotina que faz requisição — caminho clássico para fazer o **servidor** buscar endereço interno que o navegador nunca alcançaria. **Resolver na Tarefa 5 da Fase 2**, quando o conector existir: validar contra **lista de destinos permitidos**, recusar endereço privado, e registrar a tentativa recusada. ⚠️ Não é urgente hoje porque nenhuma rotina lê esse campo ainda — **e é exatamente por isso que precisa estar escrito**, senão nasce junto com o conector sem ninguém lembrar |
 | **25** | 🔴 **Falta o domínio e ligar o Cloudflare — o resto está pronto e provado** (19/08/2026, 23h45) | **O lado do CSI funciona em produção**, medido: **401** sem token, **401** com token errado, **400** sem remetente (com o motivo por extenso) e **201 com evidência gravada** — conferida no banco, não pela resposta. Já existem a organização `CSI Brasil` e a fonte `E-mail encaminhado`, com o token gravado em `token-entrada-email-csi.txt` na pasta do usuário (**única cópia** — o banco guarda só o hash). **Falta só o que é seu:** um domínio na Cloudflare e o Email Worker. **Passo a passo com o código pronto em `docs/COMO-LIGAR-ENTRADA-DE-EMAIL.md`.** ⚠️ Depois de configurar, **mande um e-mail de verdade e me avise** — "configurei" não é prova, e hoje mesmo o outro projeto mostrou um portal entregando lead por e-mail há semanas sem que nada registrasse |
 | **25-historico** | 🟡 **Contexto original do item 25** (19/08/2026, 23h06) | O **nosso lado** está pronto: rota de entrada, autenticação por fonte e gravação como evidência. O que falta é externo: (a) um **domínio** — hoje o CSI está em `csi-brasil.vercel.app`, e endereço de e-mail precisa de domínio próprio; (b) um **serviço de entrada** que receba o e-mail e chame nossa rota. Gratuitos: **Cloudflare Email Routing** (grátis, exige o domínio na Cloudflare) e a camada gratuita do Postmark ou Resend. ⚠️ **Escolher o serviço não muda o nosso código** — foi para isso que a rota nasceu agnóstica: ela aceita os nomes de campo mais comuns e guarda o corpo cru antes de interpretar qualquer coisa |

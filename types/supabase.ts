@@ -10,6 +10,7 @@ export type Database = {
     Tables: {
       companies: {
         Row: {
+          busca: unknown;
           capital_social: number | null;
           cnae_principal: string | null;
           cnpj: string;
@@ -31,6 +32,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          busca?: unknown;
           capital_social?: number | null;
           cnae_principal?: string | null;
           cnpj: string;
@@ -52,6 +54,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          busca?: unknown;
           capital_social?: number | null;
           cnae_principal?: string | null;
           cnpj?: string;
@@ -98,6 +101,7 @@ export type Database = {
       };
       evidence: {
         Row: {
+          busca: unknown;
           collected_at: string;
           collected_by: string | null;
           collected_by_kind: string;
@@ -109,6 +113,7 @@ export type Database = {
           source_id: string;
         };
         Insert: {
+          busca?: unknown;
           collected_at?: string;
           collected_by?: string | null;
           collected_by_kind: string;
@@ -120,6 +125,7 @@ export type Database = {
           source_id: string;
         };
         Update: {
+          busca?: unknown;
           collected_at?: string;
           collected_by?: string | null;
           collected_by_kind?: string;
@@ -377,11 +383,27 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      buscar: {
+        Args: { p_org: string; p_termo: string };
+        Returns: {
+          coletado_em: string;
+          confianca: number;
+          detalhe: string;
+          fonte: string;
+          id: string;
+          relevancia: number;
+          tipo: string;
+          titulo: string;
+          trecho: string;
+        }[];
+      };
       has_org_role: {
         Args: { p_org: string; p_roles: string[] };
         Returns: boolean;
       };
       is_org_member: { Args: { p_org: string }; Returns: boolean };
+      sem_acento: { Args: { t: string }; Returns: string };
+      unaccent: { Args: { "": string }; Returns: string };
     };
     Enums: {
       [_ in never]: never;

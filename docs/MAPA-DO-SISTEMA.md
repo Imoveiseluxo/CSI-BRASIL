@@ -224,6 +224,31 @@ O hash na ficha e' link para a evidencia: quem duvida clica e ve o original.
 "existe mas nao e' sua" confirmaria a existencia do id. Provado em 20/08/2026
 com uma segunda organizacao de teste, apagada em seguida.
 
+### 11.1 Como a busca funciona
+
+| Peca | Onde | O que faz |
+|---|---|---|
+| Coluna `busca` | `companies` e `evidence` | vetor de texto gerado pelo proprio banco, **sem acento** (migration 0009) |
+| `public.sem_acento(t)` | banco | tira acento; usada nas duas pontas — no vetor guardado e no termo digitado |
+| `public.buscar(p_org, p_termo)` | banco, migration 0010 | ordena por relevancia (`ts_rank`) e devolve o **trecho que casou** (`ts_headline`) |
+| `pedacosDoTrecho()` | `lib/busca/queries.ts` | quebra o trecho marcado em pedacos para a tela |
+
+⚠️ **`public.buscar` e' `security invoker`, e nunca pode virar `definer`.** Ela le
+tabelas com RLS; como `definer` devolveria resultado de **qualquer** organizacao.
+Busca e' onde um vazamento passa despercebido, porque o resultado parece legitimo.
+Medido em 20/08/2026: passando o id de outra organizacao no proprio parametro
+`p_org`, a sessao do dono recebeu `[]` — com o **mesmo termo** que devolvia 2
+resultados na organizacao dele, e com o superusuario confirmando que a linha
+existia la e casava.
+
+⚠️ **O trecho e' marcado com caracteres de controle (0x02/0x03), nao com HTML.**
+O padrao do `ts_headline` e' `<b>`, e exibir isso exigiria `dangerouslySetInnerHTML`
+sobre texto derivado de fonte externa — XSS por conveniencia de formatacao.
+
+⚠️ **Evidencia nao tem trecho destacado, de proposito.** O artefato cru pode conter
+dado pessoal, e um trecho numa lista de resultados vazaria isso sem ninguem ter
+escolhido abrir nada. Dado pessoal so aparece na tela de evidencia.
+
 ---
 
 ## 12. As rotas de API

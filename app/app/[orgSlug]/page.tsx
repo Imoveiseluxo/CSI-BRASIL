@@ -2,7 +2,7 @@ import Link from "next/link";
 import { sairAction } from "@/lib/auth/actions";
 import { requireOrgMember } from "@/lib/auth/guards";
 import { ROLE_LABELS } from "@/lib/auth/permissions";
-import { busca } from "@/lib/busca/queries";
+import { busca, pedacosDoTrecho } from "@/lib/busca/queries";
 import { createClient } from "@/lib/supabase/server";
 import { FormularioConsulta } from "./formulario";
 
@@ -59,7 +59,8 @@ export default async function WorkspacePage({ params, searchParams }: Props) {
       <section className="bloco">
         <h2>Buscar no que já foi coletado</h2>
         <p className="fraco">
-          Procura em empresas e nos artefatos brutos guardados. Cada resultado mostra de onde veio.
+          Procura em empresas e nos artefatos brutos guardados. Os mais parecidos com o termo vêm
+          primeiro, e cada resultado mostra de onde veio.
         </p>
         <form className="linha" action={`/app/${orgSlug}`}>
           <label htmlFor="q" className="oculto">
@@ -87,6 +88,22 @@ export default async function WorkspacePage({ params, searchParams }: Props) {
                     <span className="etiqueta">{a.tipo}</span>
                   </div>
                   <div className="fraco">{a.detalhe}</div>
+                  {/* ⚠️ O trecho vai como TEXTO, quebrado em pedaços — nunca
+                      como HTML injetado. Ele deriva de dado de fonte externa, e
+                      injetar HTML de fora é XSS. */}
+                  {a.trecho ? (
+                    <p className="trecho">
+                      {pedacosDoTrecho(a.trecho).map((p, i) =>
+                        p.marcado ? (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: pedaços de um texto não reordenam
+                          <mark key={i}>{p.texto}</mark>
+                        ) : (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: idem
+                          <span key={i}>{p.texto}</span>
+                        ),
+                      )}
+                    </p>
+                  ) : null}
                   <div className="procedencia">
                     <span>fonte: {a.fonte ?? "—"}</span>
                     <span>

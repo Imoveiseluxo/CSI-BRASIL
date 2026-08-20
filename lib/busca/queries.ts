@@ -2,35 +2,26 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 
 /**
- * Busca textual sobre o que já foi coletado.
+ * Busca textual sobre o que já foi coletado, ordenada por relevância.
  *
- * ⚠️ **Roda com o cliente do usuário**, então a RLS decide o que ele pode achar.
- * Busca com cliente de serviço acharia dado de qualquer organização — e busca é
- * justamente onde um vazamento passa despercebido, porque o resultado parece
- * legítimo.
+ * ⚠️ **Roda com o cliente do usuário**, e a função no banco é `security
+ * invoker` — então a RLS decide o que ele pode achar. Busca com poderes
+ * elevados acharia dado de qualquer organização, e busca é justamente onde um
+ * vazamento passa despercebido: o resultado parece legítimo.
  */
 
-export type AchadoEmpresa = {
-  tipo: "empresa";
+export type Achado = {
+  tipo: "empresa" | "evidencia";
   id: string;
   titulo: string;
   detalhe: string;
+  /** Trecho com o termo marcado. `null` em evidência, de propósito. */
+  trecho: string | null;
   fonte: string | null;
   coletadoEm: string | null;
   confianca: number | null;
+  relevancia: number;
 };
-
-export type AchadoEvidencia = {
-  tipo: "evidencia";
-  id: string;
-  titulo: string;
-  detalhe: string;
-  fonte: string | null;
-  coletadoEm: string | null;
-  confianca: null;
-};
-
-export type Achado = AchadoEmpresa | AchadoEvidencia;
 
 /**
  * Tira o acento do termo digitado.
@@ -42,76 +33,97 @@ export type Achado = AchadoEmpresa | AchadoEvidencia;
  *
  * ⚠️ Isto veio de medição, não de suposição: `to_tsvector('portuguese','SÃO
  * PAULO')` **não** casa com `websearch_to_tsquery('portuguese','sao paulo')`.
+ *
+ * Continua aqui, e não só no banco, porque a função `buscar` também aplica
+ * `sem_acento` — as duas pontas precisam concordar, e ter as duas explícitas é
+ * o que impede uma ser mudada sem a outra.
  */
 export function semAcento(t: string): string {
   return t.normalize("NFD").replace(/\p{Diacritic}/gu, "");
 }
 
+/** Um pedaço do trecho: `marcado` quando casou com o termo buscado. */
+export type Pedaco = { texto: string; marcado: boolean };
+
+// Os marcadores que o `ts_headline` da migration 0010 usa (StartSel/StopSel).
+//
+// ⚠️ Montados por código de caractere, e **não** escritos crus no arquivo: são
+// caracteres de controle, invisíveis. Byte invisível em código-fonte some sem
+// ninguém ver — num diff, numa cópia, num editor que "limpa" o arquivo — e a
+// falha apareceria só como destaque que parou de funcionar.
+const MARCA_ABRE = String.fromCharCode(2);
+const MARCA_FECHA = String.fromCharCode(3);
+
 /**
- * Traduz o que a pessoa digitou em consulta de busca.
+ * Quebra o trecho vindo do banco nos pedaços que casaram e nos que não casaram.
  *
- * ⚠️ `websearch_to_tsquery` em vez de montar a consulta na mão: ele entende
- * aspas e `-palavra`, e **nunca lança** com entrada estranha. Montar à mão
- * significaria tratar cada caractere especial — e um esquecido derruba a busca
- * com erro que o usuário não entende.
+ * ⚠️ **Existe para NÃO usar `dangerouslySetInnerHTML`.** O jeito comum de
+ * destacar é pedir `<b>` ao `ts_headline` e injetar como HTML — mas esse texto
+ * é derivado de dado de fonte externa, e injetar HTML de fora é XSS. Aqui o
+ * texto continua texto, e o React escapa cada pedaço.
+ *
+ * ⚠️ Marcador de abertura sem o fechamento (trecho cortado no limite de
+ * palavras) não pode fazer o resto sumir: o que sobra vai como pedaço marcado,
+ * nunca descartado. Perder texto em silêncio é pior que destacar demais.
  */
+export function pedacosDoTrecho(trecho: string | null): Pedaco[] {
+  if (!trecho) return [];
+  const saida: Pedaco[] = [];
+  const blocos = trecho.split(MARCA_ABRE);
+  for (const [i, bloco] of blocos.entries()) {
+    const corte = bloco.indexOf(MARCA_FECHA);
+    if (corte === -1) {
+      // Sem fechamento: ou é o texto antes da primeira marca (i === 0), ou é
+      // uma marca que o corte de palavras truncou. Nos dois casos vai inteiro.
+      if (bloco) saida.push({ texto: bloco, marcado: i > 0 });
+      continue;
+    }
+    const dentro = bloco.slice(0, corte);
+    const depois = bloco.slice(corte + 1);
+    if (dentro) saida.push({ texto: dentro, marcado: true });
+    if (depois) saida.push({ texto: depois, marcado: false });
+  }
+  return saida;
+}
+
+type LinhaBruta = {
+  tipo: string;
+  id: string;
+  titulo: string | null;
+  detalhe: string | null;
+  trecho: string | null;
+  fonte: string | null;
+  coletado_em: string | null;
+  confianca: number | string | null;
+  relevancia: number | null;
+};
+
 export async function busca(
   supabase: SupabaseClient<Database>,
   orgId: string,
   termo: string,
 ): Promise<Achado[]> {
-  const limpo = semAcento(termo.trim());
+  const limpo = termo.trim();
   if (!limpo) return [];
 
-  const [empresas, evidencias] = await Promise.all([
-    supabase
-      .from("companies")
-      .select(
-        "id, razao_social, nome_fantasia, cnpj, municipio, uf, situacao, confidence, evidence:evidence!companies_evidence_mesma_org(collected_at), source:sources!companies_source_mesma_org(name)",
-      )
-      .eq("organization_id", orgId)
-      .textSearch("busca", limpo, { type: "websearch", config: "portuguese" })
-      .limit(20),
-    supabase
-      .from("evidence")
-      .select("id, request_key, collected_at, source:sources(name)")
-      .eq("organization_id", orgId)
-      .textSearch("busca", limpo, { type: "websearch", config: "portuguese" })
-      .limit(20),
-  ]);
+  // A ordenação por relevância e o trecho destacado vêm do banco, onde o índice
+  // está — calcular isso no código exigiria trazer tudo antes de ordenar.
+  const { data, error } = await supabase.rpc("buscar", {
+    p_org: orgId,
+    p_termo: semAcento(limpo),
+  });
+  if (error) throw error;
 
-  const achados: Achado[] = [];
-
-  for (const e of empresas.data ?? []) {
-    const ev = e.evidence as unknown as { collected_at: string } | null;
-    const fo = e.source as unknown as { name: string } | null;
-    achados.push({
-      tipo: "empresa",
-      id: e.id,
-      titulo: e.razao_social,
-      detalhe: [e.nome_fantasia, e.cnpj, [e.municipio, e.uf].filter(Boolean).join("/"), e.situacao]
-        .filter(Boolean)
-        .join(" · "),
-      fonte: fo?.name ?? null,
-      coletadoEm: ev?.collected_at ?? null,
-      confianca: e.confidence === null ? null : Number(e.confidence),
-    });
-  }
-
-  for (const v of evidencias.data ?? []) {
-    const fo = v.source as unknown as { name: string } | null;
-    achados.push({
-      tipo: "evidencia",
-      id: v.id,
-      titulo: v.request_key ?? "(sem chave)",
-      // ⚠️ Não mostramos o conteúdo aqui: evidência crua pode conter dado
-      // pessoal, e uma lista de busca não é lugar de despejar isso.
-      detalhe: "artefato bruto guardado",
-      fonte: fo?.name ?? null,
-      coletadoEm: v.collected_at,
-      confianca: null,
-    });
-  }
-
-  return achados;
+  return ((data ?? []) as unknown as LinhaBruta[]).map((l) => ({
+    tipo: l.tipo === "evidencia" ? "evidencia" : "empresa",
+    id: l.id,
+    titulo: l.titulo ?? "(sem título)",
+    detalhe: l.detalhe ?? "",
+    trecho: l.trecho,
+    fonte: l.fonte,
+    coletadoEm: l.coletado_em,
+    // ⚠️ `null` continua `null`: confiança não informada não vira zero.
+    confianca: l.confianca === null ? null : Number(l.confianca),
+    relevancia: Number(l.relevancia ?? 0),
+  }));
 }

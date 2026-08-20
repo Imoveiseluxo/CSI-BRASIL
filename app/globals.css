@@ -17,6 +17,8 @@
   --acento: #0f5c8c;
   --erro: #a11c1c;
   --ok: #14622f;
+  --marca: #fde68a;
+  --marca-texto: #3b2f05;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,6 +31,10 @@
     --acento: #6cb6e8;
     --erro: #ff8a8a;
     --ok: #78d69b;
+    /* ⚠️ O amarelo padrão do <mark> com texto claro por cima fica ilegível no
+       escuro. Aqui o destaque é escuro com texto claro, contraste conferido. */
+    --marca: #4a3a06;
+    --marca-texto: #ffeaa0;
   }
 }
 
@@ -275,4 +281,18 @@ a {
   border-radius: 7px;
   padding: 0.45rem 0.9rem;
   font-size: 0.9rem;
+}
+
+/* O trecho do resultado que casou com o termo buscado. */
+.trecho {
+  margin: 0.4rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--texto);
+}
+.trecho mark {
+  background: var(--marca);
+  color: var(--marca-texto);
+  padding: 0 0.15em;
+  border-radius: 3px;
 }

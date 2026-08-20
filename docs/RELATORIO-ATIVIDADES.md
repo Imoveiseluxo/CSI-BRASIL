@@ -7,6 +7,85 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 20/08/2026, 00h50 — a busca passou a ordenar pelo que mais casa, e a mostrar onde casou
+
+Antes, os resultados vinham na ordem que o banco quis, e sem contexto: aparecia o nome da
+empresa, mas não **por que** ela veio. Com uma empresa só isso não incomoda; com quinhentas, a
+busca deixa de servir.
+
+Agora a busca:
+
+- **ordena por relevância** — o que mais casa com o termo vem primeiro;
+- **mostra o trecho que casou**, com a palavra destacada.
+
+### O que foi medido
+
+Contra o banco de produção, com a empresa que o dono cadastrou:
+
+```
+buscar('realty camacari')
+  0.091490  empresa     [REALTY] CONSULTORIA IMOBILIARIA LTDA [CAMACARI]
+  0.015901  evidencia   (sem trecho)
+  ordem decrescente de relevância?  SIM
+  veio com marcação de trecho?      SIM
+  evidência SEM trecho (proposital)? SIM
+```
+
+E a pergunta que importa mais que a ordenação — **a busca respeita o isolamento entre
+clientes?** Montei uma segunda organização com uma empresa dela e busquei com a sessão do
+dono, **passando o id da outra organização no próprio parâmetro da função**:
+
+```
+mesmo termo, organização própria  -> 2 resultados
+mesmo termo, organização alheia   -> []   (e o superusuário confirma: a linha existia lá)
+```
+
+Barrado pela regra de segurança do banco, **não pela tela**. Organização de teste apagada em
+seguida; restou 1.
+
+### Três decisões que valem estar escritas
+
+⚠️ **A função de busca no banco é `security invoker`, e nunca pode virar `definer`.** Como
+`definer`, ela rodaria com os poderes de quem a criou e devolveria resultado de **qualquer**
+organização. Busca é justamente onde um vazamento passa despercebido — o resultado parece
+legítimo. Está escrito no código e no mapa para ninguém "otimizar" isso depois.
+
+⚠️ **O destaque não usa HTML.** O jeito comum é pedir `<b>` ao banco e injetar na tela — mas
+esse texto deriva de dado de fonte externa, e injetar HTML de fora é XSS. Marquei com
+caracteres de controle e quebro em pedaços no código; o texto continua texto.
+
+⚠️ **Evidência não ganhou trecho destacado, de propósito.** O artefato cru pode conter dado
+pessoal, e um trecho na lista de resultados vazaria isso sem ninguém ter escolhido abrir nada.
+
+### Dois erros meus nesta tarefa, corrigidos em voz alta
+
+1. **Apliquei a migration e só depois troquei os marcadores** — o banco continuou devolvendo
+   os antigos (`«»`). Ia para o ar mostrando `«REALTY»` como texto literal na tela. Só apareceu
+   porque eu medi contra o banco em vez de confiar no teste verde. Reapliquei e remedi.
+
+2. **Meu primeiro teste de isolamento não provava nada.** Ele buscava um termo na organização
+   do dono e **outro** termo na alheia; as duas voltaram `[]` — uma por segurança, a outra
+   simplesmente porque o termo não existia. Refiz com o **mesmo termo** nos dois lados, que é
+   o que separa as duas explicações.
+
+### O que ficou aberto
+
+- A busca ainda **não filtra por período nem por fonte**. Com um punhado de registros não faz
+  falta; vai fazer.
+Nada mais. **E um susto que eu mesmo criei e desfiz:** ao ver que o banco tinha uma empresa
+só, cheguei a escrever na lista de pendências que a Petrobras podia ter sumido. Medi antes de
+levar isso ao dono, e a medição derrubou: a tabela de evidências guarda a coleta do e-mail de
+teste das 23h16 e a do CNPJ dele das 23h53 — se alguém tivesse apagado registros, **a mais
+antiga teria ido junto**. Ela está lá. Logo a Petrobras nunca foi gravada: `33.000.167/0001-01`
+é o exemplo escrito na tela vazia, e ele já tinha dito *"usei meu cnpj mesmo"*. Pendência
+aberta e fechada na mesma medição.
+
+**Verificação:** 78 testes verdes (6 novos), `tsc` sem erro, build completa. O teste do trecho
+foi quebrado de propósito antes de encerrar — e ficou vermelho pelo motivo certo: o texto
+`QUIMICA DO NORDESTE` sumia da tela sem erro nenhum.
+
+---
+
 ## 20/08/2026, 00h35 — a tela de evidência: procedência que dá para conferir
 
 Até agora a ficha da empresa **dizia** "veio da fonte X, com este hash" — e ninguém conseguia
