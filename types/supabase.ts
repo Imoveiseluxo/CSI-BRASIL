@@ -384,7 +384,12 @@ export type Database = {
     };
     Functions: {
       buscar: {
-        Args: { p_org: string; p_termo: string };
+        Args: {
+          p_desde?: string;
+          p_fonte?: string;
+          p_org: string;
+          p_termo: string;
+        };
         Returns: {
           coletado_em: string;
           confianca: number;

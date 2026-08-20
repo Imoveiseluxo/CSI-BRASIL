@@ -7,6 +7,73 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 20/08/2026, 08h20 — filtros de período e de fonte, e a regra de nunca mentir por omissão
+
+Último item que faltava da busca. Agora dá para estreitar por **data** (7, 30, 90 dias ou
+qualquer data) e por **fonte**. Os dois ficam na URL junto com o termo, então o link continua
+podendo ser guardado ou mandado para alguém.
+
+### O que foi medido, contra o banco de produção
+
+Quatro perguntas, e cada uma com uma resposta que **separa as hipóteses** — resultado que
+poderia ter duas explicações não prova nada:
+
+```
+1. período
+   sem filtro nenhum                     -> 4
+   últimos 30 dias (coletado ontem)      -> 4      corta o que é velho…
+   só o que for de 2027 em diante        -> 0      …e mantém o que está dentro
+
+2. fonte
+   só a fonte "Minha Receita"            -> 4
+   só a fonte "E-mail encaminhado"       -> 0
+
+3. empresa SEM evidência consegue existir?
+   inserir empresa sem evidência         -> RECUSADO pelo banco (erro 23502)
+
+4. os filtros furam o isolamento entre clientes?
+   organização própria, sem filtro       -> 4
+   id de OUTRA organização no parâmetro  -> []
+   fonte de outra organização no filtro  -> []
+```
+
+**A pergunta 3 rendeu a descoberta da tarefa**, e ela é boa: `companies.evidence_id` é
+obrigatório no banco. **Nenhuma empresa pode existir sem apontar para a evidência que a
+sustenta** — isso é estrutura, não regra escrita em algum lugar que alguém possa esquecer de
+aplicar. É exatamente o que o book cobra, e estava garantido sem que eu soubesse.
+
+**Correção de algo que eu tinha escrito errado:** na migration eu havia comentado que o
+`coalesce` com a data de produção existia porque *"empresa sem evidência sumiria do filtro"*.
+**Esse caso não existe** — o banco o proíbe. Reescrevi o comentário dizendo a verdade: o
+`coalesce` fica como rede para o dia em que essa obrigatoriedade for afrouxada. Comentário que
+descreve um sistema que não é o real já custou uma migration quebrada neste projeto (a `0006`,
+em 19/08).
+
+### A regra que governa os dois filtros
+
+⚠️ **Filtro inválido vira "sem filtro", nunca "filtro impossível".** O que chega pela URL é
+hostil — qualquer um digita o que quiser lá. Um período inventado ou uma fonte que não é um id
+**caem para o padrão** em vez de irem para o banco. Filtrar por lixo devolveria zero
+resultados, e zero resultados é indistinguível de *"não existe nada"*: a busca passaria a
+mentir por omissão, sem erro nenhum na tela.
+
+⚠️ **Resultado vazio com filtro ligado diz isso na tela**, e oferece o link para buscar sem
+filtro. Pelo mesmo motivo: *"Nada encontrado"* com um filtro escondido parece ausência de dado
+quando é só recorte.
+
+### O que ficou aberto
+
+Nada da busca. Ela agora acha, ordena, mostra onde casou, filtra, e não mente quando o
+recorte esconde coisa.
+
+**Verificação:** 86 testes verdes (8 novos), `tsc` sem erro, build completa, medição contra o
+banco de produção acima.
+
+**Nota do que apareceu de madrugada:** o dono consultou a **BAHIA REALTY LTDA** às 02h09 —
+segunda empresa no banco, coletada e gravada com procedência, sem intervenção minha.
+
+---
+
 ## 20/08/2026, 00h50 — a busca passou a ordenar pelo que mais casa, e a mostrar onde casou
 
 Antes, os resultados vinham na ordem que o banco quis, e sem contexto: aparecia o nome da

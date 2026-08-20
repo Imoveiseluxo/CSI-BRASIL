@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import type { Database } from "@/types/supabase";
 
 /**
@@ -86,6 +87,50 @@ export function pedacosDoTrecho(trecho: string | null): Pedaco[] {
   return saida;
 }
 
+/* ------------------------------------------------------------------ filtros */
+
+/** Os períodos oferecidos na tela. `tudo` é o padrão e não filtra nada. */
+export const PERIODOS = {
+  tudo: "Qualquer data",
+  "7": "Últimos 7 dias",
+  "30": "Últimos 30 dias",
+  "90": "Últimos 90 dias",
+} as const;
+
+export type Periodo = keyof typeof PERIODOS;
+
+/**
+ * Valida os filtros que chegam pela URL.
+ *
+ * ⚠️ **Isto é input externo.** Vem da barra de endereço, onde qualquer um
+ * escreve o que quiser. Um `fonte` que não seja um UUID faria o Postgres
+ * devolver erro de sintaxe em vez de resultado, e a tela quebraria com uma
+ * mensagem técnica na cara do usuário.
+ *
+ * ⚠️ **Valor inválido vira "sem filtro", nunca "filtro impossível".** Filtrar
+ * por lixo devolveria zero resultados — indistinguível de "não existe nada", e
+ * a busca passaria a mentir por omissão. Sem filtro, a pessoa ao menos vê o que
+ * existe.
+ */
+export const filtrosSchema = z.object({
+  periodo: z.enum(["tudo", "7", "30", "90"]).catch("tudo"),
+  fonte: z.uuid().optional().catch(undefined),
+});
+
+export type Filtros = z.infer<typeof filtrosSchema>;
+
+/**
+ * Converte o período escolhido na data-corte que vai para o banco.
+ *
+ * Recebe `agora` de fora de propósito: função que lê o relógio sozinha não dá
+ * para testar sem esperar o tempo passar.
+ */
+export function desdeDoPeriodo(periodo: Periodo, agora: Date): string | null {
+  if (periodo === "tudo") return null;
+  const dias = Number(periodo);
+  return new Date(agora.getTime() - dias * 24 * 60 * 60 * 1000).toISOString();
+}
+
 type LinhaBruta = {
   tipo: string;
   id: string;
@@ -102,15 +147,22 @@ export async function busca(
   supabase: SupabaseClient<Database>,
   orgId: string,
   termo: string,
+  filtros: Filtros = { periodo: "tudo", fonte: undefined },
+  agora: Date = new Date(),
 ): Promise<Achado[]> {
   const limpo = termo.trim();
   if (!limpo) return [];
 
-  // A ordenação por relevância e o trecho destacado vêm do banco, onde o índice
-  // está — calcular isso no código exigiria trazer tudo antes de ordenar.
+  // A ordenação por relevância, o trecho destacado e os filtros vêm do banco,
+  // onde o índice está — filtrar aqui exigiria trazer tudo antes de descartar.
   const { data, error } = await supabase.rpc("buscar", {
     p_org: orgId,
     p_termo: semAcento(limpo),
+    // ⚠️ `undefined` e não `null`: omitido, o PostgREST deixa o banco usar o
+    // padrão da função (`null` = não filtra). Mandar `null` explícito funciona
+    // igual, mas os tipos gerados declaram o parâmetro como opcional.
+    p_desde: desdeDoPeriodo(filtros.periodo, agora) ?? undefined,
+    p_fonte: filtros.fonte ?? undefined,
   });
   if (error) throw error;
 

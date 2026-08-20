@@ -230,8 +230,10 @@ com uma segunda organizacao de teste, apagada em seguida.
 |---|---|---|
 | Coluna `busca` | `companies` e `evidence` | vetor de texto gerado pelo proprio banco, **sem acento** (migration 0009) |
 | `public.sem_acento(t)` | banco | tira acento; usada nas duas pontas — no vetor guardado e no termo digitado |
-| `public.buscar(p_org, p_termo)` | banco, migration 0010 | ordena por relevancia (`ts_rank`) e devolve o **trecho que casou** (`ts_headline`) |
+| `public.buscar(p_org, p_termo, p_desde, p_fonte)` | banco, migrations 0010 e 0011 | ordena por relevancia (`ts_rank`), devolve o **trecho que casou** (`ts_headline`) e aplica os filtros de periodo e fonte |
 | `pedacosDoTrecho()` | `lib/busca/queries.ts` | quebra o trecho marcado em pedacos para a tela |
+| `filtrosSchema` / `desdeDoPeriodo()` | `lib/busca/queries.ts` | validam o que vem da URL e convertem o periodo na data-corte |
+| `fontesDaOrg()` | `lib/sources/lista.ts` | as fontes da organizacao, para o seletor. Roda com o cliente do usuario: **nome de fonte revela o que a organizacao monitora** |
 
 ⚠️ **`public.buscar` e' `security invoker`, e nunca pode virar `definer`.** Ela le
 tabelas com RLS; como `definer` devolveria resultado de **qualquer** organizacao.
@@ -248,6 +250,27 @@ sobre texto derivado de fonte externa — XSS por conveniencia de formatacao.
 ⚠️ **Evidencia nao tem trecho destacado, de proposito.** O artefato cru pode conter
 dado pessoal, e um trecho numa lista de resultados vazaria isso sem ninguem ter
 escolhido abrir nada. Dado pessoal so aparece na tela de evidencia.
+
+### 11.2 Os filtros da busca, e a regra que os governa
+
+Periodo (`tudo` / 7 / 30 / 90 dias) e fonte. Ficam na URL, junto com o termo, para
+a busca sobreviver ao F5 e o link poder ser guardado.
+
+⚠️ **Filtro invalido vira "sem filtro", nunca "filtro impossivel".** O que chega
+pela URL e' hostil: `filtrosSchema` valida com Zod e **cai para o padrao** em vez
+de recusar. Filtrar por lixo devolveria zero resultados — indistinguivel de "nao
+existe nada", e a busca passaria a mentir por omissao.
+
+⚠️ **Resultado vazio COM filtro ligado diz isso na tela**, e oferece o link para
+buscar sem filtro. "Nada encontrado" com um filtro escondido e' o mesmo modo de
+falha: parece que nao existe, e so esta filtrado.
+
+⚠️ **Toda empresa tem evidencia obrigatoria — isso e' estrutura, nao politica.**
+`companies.evidence_id` e' `NOT NULL`; medido em 20/08/2026 tentando inserir uma
+empresa sem evidencia, e o banco recusou (erro `23502`). E' por isso que o filtro
+de periodo nunca faz uma empresa sumir: a data de coleta sempre existe. O
+`coalesce` com `produced_at` na migration 0011 fica como rede para o dia em que
+essa obrigatoriedade for afrouxada.
 
 ---
 

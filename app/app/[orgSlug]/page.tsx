@@ -2,7 +2,8 @@ import Link from "next/link";
 import { sairAction } from "@/lib/auth/actions";
 import { requireOrgMember } from "@/lib/auth/guards";
 import { ROLE_LABELS } from "@/lib/auth/permissions";
-import { busca, pedacosDoTrecho } from "@/lib/busca/queries";
+import { busca, filtrosSchema, PERIODOS, pedacosDoTrecho } from "@/lib/busca/queries";
+import { fontesDaOrg } from "@/lib/sources/lista";
 import { createClient } from "@/lib/supabase/server";
 import { FormularioConsulta } from "./formulario";
 
@@ -10,7 +11,7 @@ export const metadata = { title: "CSI Brasil" };
 
 type Props = {
   params: Promise<{ orgSlug: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; periodo?: string; fonte?: string }>;
 };
 
 /**
@@ -23,13 +24,20 @@ type Props = {
  */
 export default async function WorkspacePage({ params, searchParams }: Props) {
   const { orgSlug } = await params;
-  const { q } = await searchParams;
+  const { q, periodo, fonte } = await searchParams;
   const { org, role, user } = await requireOrgMember({ orgSlug });
 
   const supabase = await createClient();
-  // ⚠️ O termo fica na URL de propósito: assim a busca sobrevive ao F5 e o link
-  // pode ser guardado ou mandado para alguém.
-  const achados = q ? await busca(supabase, org.id, q) : null;
+
+  // ⚠️ Vem da barra de endereço: valida antes de tocar o banco. Valor inválido
+  // vira "sem filtro", nunca "filtro impossível" — ver `filtrosSchema`.
+  const filtros = filtrosSchema.parse({ periodo, fonte });
+  const filtrando = filtros.periodo !== "tudo" || filtros.fonte !== undefined;
+
+  // ⚠️ O termo e os filtros ficam na URL de propósito: assim a busca sobrevive
+  // ao F5 e o link pode ser guardado ou mandado para alguém.
+  const achados = q ? await busca(supabase, org.id, q, filtros) : null;
+  const fontes = await fontesDaOrg(supabase, org.id);
 
   const { data: empresas } = await supabase
     .from("companies")
@@ -60,19 +68,58 @@ export default async function WorkspacePage({ params, searchParams }: Props) {
         <h2>Buscar no que já foi coletado</h2>
         <p className="fraco">
           Procura em empresas e nos artefatos brutos guardados. Os mais parecidos com o termo vêm
-          primeiro, e cada resultado mostra de onde veio.
+          primeiro, e cada resultado mostra de onde veio. Dá para estreitar por data e por fonte.
         </p>
         <form className="linha" action={`/app/${orgSlug}`}>
           <label htmlFor="q" className="oculto">
             Termo
           </label>
           <input id="q" name="q" defaultValue={q ?? ""} placeholder="razão social, cidade, CNPJ…" />
+
+          <label htmlFor="periodo" className="oculto">
+            Período
+          </label>
+          <select id="periodo" name="periodo" defaultValue={filtros.periodo}>
+            {Object.entries(PERIODOS).map(([valor, rotulo]) => (
+              <option key={valor} value={valor}>
+                {rotulo}
+              </option>
+            ))}
+          </select>
+
+          <label htmlFor="fonte" className="oculto">
+            Fonte
+          </label>
+          <select id="fonte" name="fonte" defaultValue={filtros.fonte ?? ""}>
+            <option value="">Qualquer fonte</option>
+            {fontes.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name}
+              </option>
+            ))}
+          </select>
+
           <button type="submit">Buscar</button>
         </form>
 
         {achados ? (
           achados.length === 0 ? (
-            <p className="fraco">Nada encontrado para “{q}”.</p>
+            // ⚠️ Quando há filtro ligado, a tela precisa DIZER isso. "Nada
+            // encontrado" com um filtro escondido faz a busca mentir por
+            // omissão: parece que não existe, e só está filtrado.
+            <p className="fraco">
+              Nada encontrado para “{q}”
+              {filtrando ? (
+                <>
+                  {" "}
+                  <strong>com os filtros ligados</strong> —{" "}
+                  <Link href={`/app/${orgSlug}?q=${encodeURIComponent(q ?? "")}`}>
+                    buscar sem filtro
+                  </Link>
+                </>
+              ) : null}
+              .
+            </p>
           ) : (
             <ul className="lista">
               {achados.map((a) => (

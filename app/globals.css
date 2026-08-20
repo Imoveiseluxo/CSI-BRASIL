@@ -130,6 +130,21 @@ input {
   width: 100%;
 }
 
+/* Os seletores de filtro da busca. Não esticam: quem busca precisa do campo de
+   texto largo, e o filtro é acessório. */
+.linha select {
+  flex: 0 0 auto;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--borda);
+  border-radius: 7px;
+  /* ⚠️ Cor explícita nos dois: sem isto, o menu aberto herda o branco do
+     sistema e no tema escuro sai texto claro sobre fundo claro. */
+  background: var(--fundo);
+  color: var(--texto);
+  font: inherit;
+  max-width: 100%;
+}
+
 button {
   padding: 0.55rem 1rem;
   border: 0;
