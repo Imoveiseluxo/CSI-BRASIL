@@ -18,6 +18,22 @@ const DIR = join(process.cwd(), "supabase/migrations");
 /** Tabelas de infraestrutura que legitimamente não pertencem a uma organização. */
 const ISENTAS = new Set(["organizations"]);
 
+/**
+ * A camada de referência: base pública, igual para todos, somente-leitura.
+ *
+ * ⚠️ **É uma exceção deliberada à regra absoluta** (`toda tabela de domínio tem
+ * organization_id`), aberta em 20/08/2026 para a base de CNPJ da Receita: são
+ * dezenas de GB idênticos para todo cliente, e duplicá-los por organização não
+ * traria isolamento nenhum, só custo.
+ *
+ * ⚠️ **Exceção aberta sem trava vira buraco.** Por isso ela é estreita — só o
+ * prefixo — e vem acompanhada do teste seguinte, que proíbe qualquer política
+ * de escrita nessas tabelas. Sem esse par, "sem organization_id" viraria a
+ * porta de entrada para dado de cliente sem isolamento.
+ */
+const PREFIXO_REFERENCIA = "rf_";
+const ehReferencia = (nome: string) => nome.startsWith(PREFIXO_REFERENCIA);
+
 function migrations(): { arquivo: string; sql: string }[] {
   if (!existsSync(DIR)) return [];
   return readdirSync(DIR)
@@ -51,7 +67,7 @@ describe("toda tabela de domínio é multi-tenant", () => {
     const faltando: string[] = [];
     for (const { arquivo, sql } of migrations()) {
       for (const { nome, corpo } of tabelasCriadas(sql)) {
-        if (ISENTAS.has(nome)) continue;
+        if (ISENTAS.has(nome) || ehReferencia(nome)) continue;
         // Precisa estar no CORPO da própria tabela, não em qualquer lugar do
         // arquivo: senão uma tabela sem tenant passaria de carona numa migration
         // que cria duas.
@@ -66,8 +82,14 @@ describe("toda tabela de domínio é multi-tenant", () => {
     for (const { arquivo, sql } of migrations()) {
       const baixo = sql.toLowerCase();
       for (const { nome } of tabelasCriadas(sql)) {
-        const esperado = `alter table public.${nome} enable row level security`;
-        if (!baixo.includes(esperado)) faltando.push(`${arquivo}:${nome}`);
+        // ⚠️ Regex, e não `includes` de texto literal. A primeira versão casava
+        // a frase exata e reprovou nove tabelas só porque o SQL estava alinhado
+        // com espaços a mais. Guarda que dá alarme falso ensina a contornar a
+        // guarda — e o contorno mais fácil é justamente afrouxá-la.
+        const esperado = new RegExp(
+          `alter\\s+table\\s+(?:public\\.)?["']?${nome}["']?\\s+enable\\s+row\\s+level\\s+security`,
+        );
+        if (!esperado.test(baixo)) faltando.push(`${arquivo}:${nome}`);
       }
     }
     expect(faltando, `tabelas sem RLS: ${faltando.join(", ")}`).toEqual([]);
@@ -86,5 +108,48 @@ describe("toda tabela de domínio é multi-tenant", () => {
       .filter(({ sql }) => /force\s+row\s+level\s+security/i.test(semComentarios(sql)))
       .map(({ arquivo }) => arquivo);
     expect(culpados, `migrations com FORCE RLS: ${culpados.join(", ")}`).toEqual([]);
+  });
+
+  test("a exceção da camada de referência não vira porta de escrita", () => {
+    // ⚠️ Este é o teste que PAGA pela exceção do `rf_`. Sem `organization_id`,
+    // a única coisa que impede aquela tabela de virar depósito de dado de
+    // cliente sem isolamento é não existir caminho de escrita para quem usa o
+    // aplicativo. Se alguém acrescentar uma política de escrita ali, isso tem
+    // de ficar vermelho no mesmo minuto.
+    const problemas: string[] = [];
+    for (const { arquivo, sql } of migrations()) {
+      const criaReferencia = tabelasCriadas(sql).some(({ nome }) => ehReferencia(nome));
+      if (!criaReferencia) continue;
+      const limpo = semComentarios(sql).toLowerCase();
+
+      // Política de escrita, em qualquer forma. `for all` inclui escrita.
+      if (/create\s+policy[\s\S]*?\bfor\s+(insert|update|delete|all)\b/.test(limpo)) {
+        problemas.push(`${arquivo}: política de escrita numa migration de camada de referência`);
+      }
+      // E o direito tem de ser tirado na marra, não só pela ausência de política.
+      if (!/revoke\s+insert,\s*update,\s*delete/.test(limpo)) {
+        problemas.push(`${arquivo}: falta revogar insert/update/delete de authenticated e anon`);
+      }
+    }
+    expect(problemas, problemas.join(" | ")).toEqual([]);
+  });
+
+  test("só o prefixo rf_ pode dispensar organization_id", () => {
+    // ⚠️ Guarda da guarda. Sem isto, bastaria alguém chamar uma tabela de
+    // cliente de `rf_alguma_coisa` para ela escapar do isolamento. O prefixo é
+    // um contrato: quem o usa está afirmando "isto é base pública, igual para
+    // todos, somente-leitura".
+    const suspeitas: string[] = [];
+    for (const { arquivo, sql } of migrations()) {
+      for (const { nome, corpo } of tabelasCriadas(sql)) {
+        if (!ehReferencia(nome)) continue;
+        if (/\borganization_id\b/.test(corpo)) {
+          suspeitas.push(
+            `${arquivo}:${nome} — tem organization_id, então não é camada de referência; tire o prefixo rf_`,
+          );
+        }
+      }
+    }
+    expect(suspeitas, suspeitas.join(" | ")).toEqual([]);
   });
 });

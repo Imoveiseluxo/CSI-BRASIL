@@ -26,6 +26,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "pg": "^8.23.0",
+    "pg-copy-streams": "^7.0.0",
     "typescript": "^5",
     "vitest": "^4.1.7"
   }

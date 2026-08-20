@@ -44,3 +44,4 @@ supabase/.temp/
 # repositório parar de rastrear os dois planos — sem erro, sem aviso.
 
 .vercel
+.receita/

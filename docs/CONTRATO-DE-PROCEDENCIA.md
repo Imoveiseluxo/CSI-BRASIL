@@ -10,7 +10,7 @@ conhecimento — descobrir depois significa reescrever o modelo de dados.
 
 ---
 
-## Três classes de tabela, declaradas explicitamente
+## Quatro classes de tabela, declaradas explicitamente
 
 > ⚠️ **Eram duas até 19/08/2026.** A terceira apareceu quando a primeira tabela real de dado
 > foi desenhada, na Fase 2 — e é bom que tenha aparecido assim: contrato que nunca encosta
@@ -20,6 +20,12 @@ conhecimento — descobrir depois significa reescrever o modelo de dados.
 > `configuracao` (não é o que o operador pediu) e não cabia em `conhecimento`: as sete colunas
 > exigem `evidence_id`, e a evidência **é** a evidência — apontaria para si mesma. Também não
 > tem `transform_id`, porque não foi derivada de nada. Foi **capturada**.
+>
+> ⚠️ **A quarta apareceu em 20/08/2026**, quando a base pública de CNPJ da Receita entrou. Pela
+> mesma razão: o contrato encostou num caso real e não coube. São 28 milhões de linhas vindas
+> do **mesmo** arquivo, do **mesmo** endereço, com o **mesmo** hash — repetir `source_id`,
+> `collected_at`, `content_hash` e `collected_by_kind` em cada uma multiplicaria o disco sem
+> acrescentar informação nenhuma. A procedência passou a morar **por referência**.
 
 ## As classes
 
@@ -30,6 +36,7 @@ acima** do `create table`:
 -- @classe: configuracao
 -- @classe: evidencia
 -- @classe: conhecimento
+-- @classe: referencia
 ```
 
 **`configuracao`** — registra o que o **operador** pediu: organizações, membros, projetos,
@@ -40,6 +47,34 @@ da resposta, o PDF baixado, o HTML da página. Não interpreta nada.
 
 **`conhecimento`** — registra o que o sistema **derivou de uma evidência**: entidade, relação,
 fato extraído, evento, resultado de Transform.
+
+**`referencia`** — base **pública**, igual para todo cliente, somente-leitura, carregada em
+massa: a base de CNPJ da Receita Federal, e o que vier depois no mesmo formato. Identificada
+pelo prefixo obrigatório **`rf_`**.
+
+### As colunas obrigatórias em `referencia`
+
+| Onde | O que é exigido |
+|---|---|
+| Toda tabela `rf_`, exceto a âncora | **`carga_id`** apontando para `rf_carga` |
+| A âncora `rf_carga` | **`origem_url`**, **`origem_tipo`**, **`content_hash`**, **`concluida_em`** |
+
+⚠️ **`origem_tipo` só aceita `receita` ou `espelho`.** Em 20/08/2026 foi medido que o servidor
+da Receita (`dadosabertos.rfb.gov.br`, 200.152.38.155:443) **não aceita conexão** do nosso
+ambiente, enquanto `gov.br` e o espelho respondem em menos de 1s. Registrar "veio da Receita"
+o que veio de terceiro seria a afirmação sem lastro que este contrato inteiro existe para
+impedir. A conferência por amostra contra a API da Minha Receita é o que fecha a brecha.
+
+⚠️ **`concluida_em` nulo significa carga que não terminou**, e as linhas dela não podem ser
+tratadas como completas. Carga pela metade que se parece com carga completa deixa a rede com
+buraco sem ninguém ver — foi o que aconteceu na primeira carga real, quando o `COPY` deu certo
+e o passo seguinte falhou.
+
+⚠️ **Esta classe não é uma porta de saída da regra de multi-tenancy.** Tabela `rf_` não tem
+`organization_id` porque não guarda dado de cliente — e a guarda
+`toda-tabela-e-multi-tenant.test.ts` exige o prefixo `rf_` em **qualquer** tabela sem
+`organization_id`, além de proibir política de escrita nelas. A exceção é estreita e está sob
+teste, não sob confiança.
 
 ### As colunas obrigatórias em `evidencia`
 

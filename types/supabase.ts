@@ -99,6 +99,70 @@ export type Database = {
           },
         ];
       };
+      entities: {
+        Row: {
+          confidence: number | null;
+          display_name: string;
+          evidence_id: string | null;
+          id: string;
+          kind: string;
+          organization_id: string;
+          produced_at: string;
+          produced_by: string | null;
+          produced_by_kind: string;
+          source_id: string | null;
+          transform_id: string | null;
+        };
+        Insert: {
+          confidence?: number | null;
+          display_name: string;
+          evidence_id?: string | null;
+          id?: string;
+          kind: string;
+          organization_id: string;
+          produced_at?: string;
+          produced_by?: string | null;
+          produced_by_kind: string;
+          source_id?: string | null;
+          transform_id?: string | null;
+        };
+        Update: {
+          confidence?: number | null;
+          display_name?: string;
+          evidence_id?: string | null;
+          id?: string;
+          kind?: string;
+          organization_id?: string;
+          produced_at?: string;
+          produced_by?: string | null;
+          produced_by_kind?: string;
+          source_id?: string | null;
+          transform_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entities_evidence_id_fkey";
+            columns: ["evidence_id"];
+            isOneToOne: false;
+            referencedRelation: "evidence";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entities_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entities_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       evidence: {
         Row: {
           busca: unknown;
@@ -149,6 +213,177 @@ export type Database = {
             columns: ["source_id", "organization_id"];
             isOneToOne: false;
             referencedRelation: "sources";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      identifiers: {
+        Row: {
+          confidence: number | null;
+          entity_id: string;
+          evidence_id: string | null;
+          id: string;
+          kind: string;
+          organization_id: string;
+          produced_at: string;
+          produced_by: string | null;
+          produced_by_kind: string;
+          source_id: string | null;
+          transform_id: string | null;
+          value: string;
+          value_original: string | null;
+        };
+        Insert: {
+          confidence?: number | null;
+          entity_id: string;
+          evidence_id?: string | null;
+          id?: string;
+          kind: string;
+          organization_id: string;
+          produced_at?: string;
+          produced_by?: string | null;
+          produced_by_kind: string;
+          source_id?: string | null;
+          transform_id?: string | null;
+          value: string;
+          value_original?: string | null;
+        };
+        Update: {
+          confidence?: number | null;
+          entity_id?: string;
+          evidence_id?: string | null;
+          id?: string;
+          kind?: string;
+          organization_id?: string;
+          produced_at?: string;
+          produced_by?: string | null;
+          produced_by_kind?: string;
+          source_id?: string | null;
+          transform_id?: string | null;
+          value?: string;
+          value_original?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "identifiers_entity_id_organization_id_fkey";
+            columns: ["entity_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "identifiers_evidence_id_fkey";
+            columns: ["evidence_id"];
+            isOneToOne: false;
+            referencedRelation: "evidence";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "identifiers_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "identifiers_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      links: {
+        Row: {
+          certeza: string;
+          confidence: number | null;
+          evidence_id: string;
+          from_entity_id: string;
+          id: string;
+          kind: string;
+          organization_id: string;
+          produced_at: string;
+          produced_by: string | null;
+          produced_by_kind: string;
+          rationale: string | null;
+          source_id: string | null;
+          to_entity_id: string;
+          transform_id: string | null;
+        };
+        Insert: {
+          certeza?: string;
+          confidence?: number | null;
+          evidence_id: string;
+          from_entity_id: string;
+          id?: string;
+          kind: string;
+          organization_id: string;
+          produced_at?: string;
+          produced_by?: string | null;
+          produced_by_kind: string;
+          rationale?: string | null;
+          source_id?: string | null;
+          to_entity_id: string;
+          transform_id?: string | null;
+        };
+        Update: {
+          certeza?: string;
+          confidence?: number | null;
+          evidence_id?: string;
+          from_entity_id?: string;
+          id?: string;
+          kind?: string;
+          organization_id?: string;
+          produced_at?: string;
+          produced_by?: string | null;
+          produced_by_kind?: string;
+          rationale?: string | null;
+          source_id?: string | null;
+          to_entity_id?: string;
+          transform_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "links_evidence_id_fkey";
+            columns: ["evidence_id"];
+            isOneToOne: false;
+            referencedRelation: "evidence";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "links_evidence_id_organization_id_fkey";
+            columns: ["evidence_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "evidence";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "links_from_entity_id_organization_id_fkey";
+            columns: ["from_entity_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "links_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "links_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "links_to_entity_id_organization_id_fkey";
+            columns: ["to_entity_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
             referencedColumns: ["id", "organization_id"];
           },
         ];
@@ -334,6 +569,301 @@ export type Database = {
           },
         ];
       };
+      rf_carga: {
+        Row: {
+          arquivo: string;
+          concluida_em: string | null;
+          content_hash: string;
+          erro: string | null;
+          id: string;
+          iniciada_em: string;
+          linhas: number | null;
+          mes_base: string;
+          origem_tipo: string;
+          origem_url: string;
+          tabela_destino: string;
+        };
+        Insert: {
+          arquivo: string;
+          concluida_em?: string | null;
+          content_hash: string;
+          erro?: string | null;
+          id?: string;
+          iniciada_em?: string;
+          linhas?: number | null;
+          mes_base: string;
+          origem_tipo: string;
+          origem_url: string;
+          tabela_destino: string;
+        };
+        Update: {
+          arquivo?: string;
+          concluida_em?: string | null;
+          content_hash?: string;
+          erro?: string | null;
+          id?: string;
+          iniciada_em?: string;
+          linhas?: number | null;
+          mes_base?: string;
+          origem_tipo?: string;
+          origem_url?: string;
+          tabela_destino?: string;
+        };
+        Relationships: [];
+      };
+      rf_cnaes: {
+        Row: {
+          carga_id: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Insert: {
+          carga_id?: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Update: {
+          carga_id?: string | null;
+          codigo?: string;
+          descricao?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rf_cnaes_carga_id_fkey";
+            columns: ["carga_id"];
+            isOneToOne: false;
+            referencedRelation: "rf_carga";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      rf_empresas: {
+        Row: {
+          capital_social: number | null;
+          carga_id: string | null;
+          cnpj_basico: string;
+          ente_federativo: string | null;
+          natureza_juridica: string | null;
+          porte: string | null;
+          qualificacao_responsavel: string | null;
+          razao_social: string | null;
+        };
+        Insert: {
+          capital_social?: number | null;
+          carga_id?: string | null;
+          cnpj_basico: string;
+          ente_federativo?: string | null;
+          natureza_juridica?: string | null;
+          porte?: string | null;
+          qualificacao_responsavel?: string | null;
+          razao_social?: string | null;
+        };
+        Update: {
+          capital_social?: number | null;
+          carga_id?: string | null;
+          cnpj_basico?: string;
+          ente_federativo?: string | null;
+          natureza_juridica?: string | null;
+          porte?: string | null;
+          qualificacao_responsavel?: string | null;
+          razao_social?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rf_empresas_carga_id_fkey";
+            columns: ["carga_id"];
+            isOneToOne: false;
+            referencedRelation: "rf_carga";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      rf_motivos: {
+        Row: {
+          carga_id: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Insert: {
+          carga_id?: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Update: {
+          carga_id?: string | null;
+          codigo?: string;
+          descricao?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rf_motivos_carga_id_fkey";
+            columns: ["carga_id"];
+            isOneToOne: false;
+            referencedRelation: "rf_carga";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      rf_municipios: {
+        Row: {
+          carga_id: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Insert: {
+          carga_id?: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Update: {
+          carga_id?: string | null;
+          codigo?: string;
+          descricao?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rf_municipios_carga_id_fkey";
+            columns: ["carga_id"];
+            isOneToOne: false;
+            referencedRelation: "rf_carga";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      rf_naturezas: {
+        Row: {
+          carga_id: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Insert: {
+          carga_id?: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Update: {
+          carga_id?: string | null;
+          codigo?: string;
+          descricao?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rf_naturezas_carga_id_fkey";
+            columns: ["carga_id"];
+            isOneToOne: false;
+            referencedRelation: "rf_carga";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      rf_paises: {
+        Row: {
+          carga_id: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Insert: {
+          carga_id?: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Update: {
+          carga_id?: string | null;
+          codigo?: string;
+          descricao?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rf_paises_carga_id_fkey";
+            columns: ["carga_id"];
+            isOneToOne: false;
+            referencedRelation: "rf_carga";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      rf_qualificacoes: {
+        Row: {
+          carga_id: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Insert: {
+          carga_id?: string | null;
+          codigo: string;
+          descricao: string;
+        };
+        Update: {
+          carga_id?: string | null;
+          codigo?: string;
+          descricao?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rf_qualificacoes_carga_id_fkey";
+            columns: ["carga_id"];
+            isOneToOne: false;
+            referencedRelation: "rf_carga";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      rf_socios: {
+        Row: {
+          carga_id: string | null;
+          cnpj_basico: string;
+          data_entrada: string | null;
+          documento_socio: string | null;
+          faixa_etaria: string | null;
+          id: number;
+          identificador_socio: string | null;
+          nome_representante: string | null;
+          nome_socio: string | null;
+          pais: string | null;
+          qualificacao_representante: string | null;
+          qualificacao_socio: string | null;
+          representante_documento: string | null;
+        };
+        Insert: {
+          carga_id?: string | null;
+          cnpj_basico: string;
+          data_entrada?: string | null;
+          documento_socio?: string | null;
+          faixa_etaria?: string | null;
+          id?: number;
+          identificador_socio?: string | null;
+          nome_representante?: string | null;
+          nome_socio?: string | null;
+          pais?: string | null;
+          qualificacao_representante?: string | null;
+          qualificacao_socio?: string | null;
+          representante_documento?: string | null;
+        };
+        Update: {
+          carga_id?: string | null;
+          cnpj_basico?: string;
+          data_entrada?: string | null;
+          documento_socio?: string | null;
+          faixa_etaria?: string | null;
+          id?: number;
+          identificador_socio?: string | null;
+          nome_representante?: string | null;
+          nome_socio?: string | null;
+          pais?: string | null;
+          qualificacao_representante?: string | null;
+          qualificacao_socio?: string | null;
+          representante_documento?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rf_socios_carga_id_fkey";
+            columns: ["carga_id"];
+            isOneToOne: false;
+            referencedRelation: "rf_carga";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       sources: {
         Row: {
           created_at: string;
@@ -407,7 +937,32 @@ export type Database = {
         Returns: boolean;
       };
       is_org_member: { Args: { p_org: string }; Returns: boolean };
+      rede_por_cnpj: {
+        Args: { p_cnpj_basico: string; p_limite?: number; p_saltos?: number };
+        Returns: {
+          certeza: string;
+          destino_cnpj: string;
+          destino_nome: string;
+          motivo: string;
+          origem_cnpj: string;
+          origem_nome: string;
+          qualificacao: string;
+          salto: number;
+          socio_nome: string;
+          vinculo: string;
+        }[];
+      };
       sem_acento: { Args: { t: string }; Returns: string };
+      socios_da_empresa: {
+        Args: { p_cnpj_basico: string };
+        Returns: {
+          entrada: string;
+          nome: string;
+          outras_empresas: number;
+          qualificacao: string;
+          tipo: string;
+        }[];
+      };
       unaccent: { Args: { "": string }; Returns: string };
     };
     Enums: {

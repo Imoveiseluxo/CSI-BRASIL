@@ -34,7 +34,36 @@ const COLUNAS_DE_EVIDENCIA = [
   "collected_by_kind",
 ] as const;
 
-const CLASSES = new Set(["configuracao", "evidencia", "conhecimento"]);
+/**
+ * A quarta classe, aberta em 20/08/2026 para a base pública da Receita.
+ *
+ * ⚠️ **Ela existe porque repetir a procedência coluna a coluna seria pior, não
+ * melhor.** São 28 milhões de linhas de sócios, todas vindas do MESMO arquivo,
+ * baixado do MESMO endereço, com o MESMO hash. Copiar `source_id`,
+ * `collected_at`, `content_hash` e `collected_by_kind` em cada uma
+ * multiplicaria o disco sem acrescentar informação nenhuma.
+ *
+ * **O contrato aqui é por referência:** cada linha aponta para `carga_id`, e é a
+ * tabela `rf_carga` que guarda de onde veio, quando, de qual endereço e com que
+ * impressão digital. A rastreabilidade continua inteira — muda o lugar onde ela
+ * mora, não a existência dela.
+ *
+ * ⚠️ **Isto não é uma brecha para o resto do sistema.** A classe só vale para a
+ * camada de referência, e o teste abaixo exige `carga_id` em toda tabela que a
+ * declara. Tabela de cliente que tentasse usar `referencia` para escapar da
+ * procedência seria pega pela guarda de multi-tenancy, que exige o prefixo
+ * `rf_` em qualquer tabela sem `organization_id`.
+ */
+const COLUNAS_DE_REFERENCIA = ["carga_id"] as const;
+
+const CLASSES = new Set(["configuracao", "evidencia", "conhecimento", "referencia"]);
+
+/**
+ * A tabela que ancora a camada de referência: é ela que carrega a procedência
+ * de todas as outras, e por isso tem o contrato mais duro do arquivo.
+ */
+const ANCORA_DE_REFERENCIA = "rf_carga";
+const COLUNAS_DA_ANCORA = ["origem_url", "origem_tipo", "content_hash", "concluida_em"] as const;
 
 type Tabela = { arquivo: string; nome: string; classe: string | null; corpo: string };
 
@@ -61,6 +90,25 @@ function todas(): Tabela[] {
   return migrations().flatMap(({ arquivo, sql }) => tabelas(sql, arquivo));
 }
 
+/**
+ * A tabela tem a coluna — no corpo do `create table` **ou** acrescentada depois
+ * por `alter table ... add column`.
+ *
+ * ⚠️ A primeira versão olhava só o corpo do `create table`, e reprovou seis
+ * tabelas cujo `carga_id` entrou por `alter table` numa migration seguinte.
+ * Coluna acrescentada depois é procedência tão válida quanto coluna de
+ * nascença: o que importa é o estado final do banco. Guarda que obriga a
+ * escrever SQL para a conveniência dela ensina a contornar a guarda.
+ */
+function temColuna(t: Tabela, coluna: string): boolean {
+  if (new RegExp(`\\b${coluna}\\b`).test(t.corpo)) return true;
+  const alter = new RegExp(
+    `alter\\s+table\\s+(?:public\\.)?["']?${t.nome}["']?\\s+add\\s+column\\s+(?:if\\s+not\\s+exists\\s+)?${coluna}\\b`,
+    "i",
+  );
+  return migrations().some(({ sql }) => alter.test(sql));
+}
+
 describe("rastreabilidade do conhecimento", () => {
   test("toda tabela declara a classe", () => {
     const semClasse = todas()
@@ -72,7 +120,35 @@ describe("rastreabilidade do conhecimento", () => {
     ).toEqual([]);
   });
 
-  test("a classe declarada é uma das três conhecidas", () => {
+  test("tabela de referência aponta para a carga que a trouxe", () => {
+    const faltando: string[] = [];
+    for (const t of todas()) {
+      if (t.classe !== "referencia") continue;
+      // A âncora não aponta para si mesma: ela É a procedência.
+      if (t.nome === ANCORA_DE_REFERENCIA) continue;
+      for (const coluna of COLUNAS_DE_REFERENCIA) {
+        if (!temColuna(t, coluna)) faltando.push(`${t.arquivo}:${t.nome} sem ${coluna}`);
+      }
+    }
+    expect(faltando, faltando.join(" | ")).toEqual([]);
+  });
+
+  test("a âncora da camada de referência guarda de onde veio", () => {
+    // ⚠️ Se `rf_carga` perder qualquer uma destas colunas, TODA a camada de
+    // referência fica sem origem de uma vez só — dezenas de milhões de linhas
+    // apontando para uma procedência que não diz nada.
+    const ancora = todas().find((t) => t.nome === ANCORA_DE_REFERENCIA);
+    expect(
+      ancora,
+      `a tabela ${ANCORA_DE_REFERENCIA} não existe em nenhuma migration`,
+    ).toBeDefined();
+    const faltando = COLUNAS_DA_ANCORA.filter(
+      (c) => !new RegExp(`\\b${c}\\b`).test(ancora?.corpo ?? ""),
+    );
+    expect(faltando, `${ANCORA_DE_REFERENCIA} sem: ${faltando.join(", ")}`).toEqual([]);
+  });
+
+  test("a classe declarada é uma das conhecidas", () => {
     const invalidas = todas()
       .filter((t) => t.classe !== null && !CLASSES.has(t.classe))
       .map((t) => `${t.arquivo}:${t.nome}=${t.classe}`);
