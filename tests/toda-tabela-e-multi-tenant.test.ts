@@ -26,6 +26,19 @@ function migrations(): { arquivo: string; sql: string }[] {
     .map((f) => ({ arquivo: f, sql: readFileSync(join(DIR, f), "utf8") }));
 }
 
+/**
+ * Remove comentários de linha (`--`) para as checagens que buscam COMANDO.
+ *
+ * ⚠️ Não usar isto nas checagens de `@classe`: a declaração de classe vive
+ * justamente num comentário.
+ */
+function semComentarios(sql: string): string {
+  return sql
+    .split("\n")
+    .map((linha) => linha.replace(/--.*$/, ""))
+    .join("\n");
+}
+
 /** Cada tabela criada no schema public, com o corpo entre parênteses. */
 function tabelasCriadas(sql: string): { nome: string; corpo: string }[] {
   const re =
@@ -63,8 +76,14 @@ describe("toda tabela de domínio é multi-tenant", () => {
   test("ninguém usa FORCE ROW LEVEL SECURITY", () => {
     // FORCE + helper `security definer` = recursão infinita. ENABLE é suficiente,
     // e essa lição custou um apagão de permissão no projeto anterior.
+    //
+    // ⚠️ Comentário não é código. A primeira versão deste teste procurava a frase
+    // no arquivo inteiro e reprovou a migration `0001_organizations.sql` por causa
+    // do COMENTÁRIO que avisa "NUNCA usar FORCE ROW LEVEL SECURITY". Uma trava que
+    // proíbe documentar o próprio perigo ensina a não documentar — e a documentação
+    // é o que impede a próxima pessoa de cair.
     const culpados = migrations()
-      .filter(({ sql }) => /force\s+row\s+level\s+security/i.test(sql))
+      .filter(({ sql }) => /force\s+row\s+level\s+security/i.test(semComentarios(sql)))
       .map(({ arquivo }) => arquivo);
     expect(culpados, `migrations com FORCE RLS: ${culpados.join(", ")}`).toEqual([]);
   });

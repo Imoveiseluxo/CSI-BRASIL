@@ -7,6 +7,43 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 21h20 — as três migrations escritas, e uma falha na minha própria trava
+
+**Decisão do dono:** *"escreve as migrations agora, eu aplico depois"* — dívida assumida
+conscientemente, e registrada como dívida na pendência 19, não como tarefa concluída.
+
+**Escritas:** `0001_organizations.sql` (organizações, membros e os helpers `is_org_member` /
+`has_org_role`), `0002_projects.sql` e `0003_monitors.sql` — exatamente como o plano aprovou.
+
+**⚠️ O achado da sessão: a primeira migration real reprovou na MINHA PRÓPRIA TRAVA, e o
+motivo era um defeito dela.**
+
+O teste "ninguém usa FORCE ROW LEVEL SECURITY" procurava a frase no arquivo inteiro — e casou
+com o **comentário** que eu tinha escrito na própria migration avisando *"NUNCA usar FORCE ROW
+LEVEL SECURITY"*. A trava não distinguia comentário de comando.
+
+Isso não é detalhe de expressão regular. **Uma trava que proíbe documentar o próprio perigo
+ensina a não documentar** — e a documentação é justamente o que impede a próxima pessoa de
+cair. Se eu tivesse "consertado" apagando o comentário, teria removido o aviso e mantido o
+defeito.
+
+**Conserto:** as checagens que buscam **comando** passam a ignorar comentários. As que buscam
+`@classe` **não** podem ignorar — a declaração de classe vive num comentário, e essa exceção
+ficou escrita no código para ninguém "simplificar" isso depois.
+
+**Provado dos dois lados:** com o conserto, 14 verdes; e com um `alter table ... force row
+level security` de verdade numa migration de teste, o teste **volta a reprovar**. Ou seja,
+parou de reprovar comentário sem parar de pegar código.
+
+**Verificação:** `tsc --noEmit` 0 erros · **14 testes verdes** · `biome check` limpo.
+
+**O que NÃO está feito, e é o principal:** as migrations **nunca tocaram um banco**. Enquanto
+isso durar, o repositório descreve um banco que não existe. A pendência 19 lista as três
+conferências obrigatórias no dia da aplicação — incluindo a de que `update` em
+`query_versions` afeta **zero linhas**, lembrando que o Postgres **não dá erro** nesse caso.
+
+---
+
 ## 19/08/2026, 21h05 — as duas travas da Fase 1, provadas antes de existir a primeira tabela
 
 **Tarefas 1 e 1b do plano da Fase 1, concluídas.** São as únicas totalmente verificáveis sem
