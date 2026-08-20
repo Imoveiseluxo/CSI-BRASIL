@@ -298,6 +298,62 @@ a {
   font-size: 0.9rem;
 }
 
+/* ---- rede de ligações ---- */
+
+/* A linha que abre. `<details>` nativo: funciona sem JavaScript. */
+.ficha details > summary {
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  list-style: none;
+}
+.ficha details > summary::-webkit-details-marker {
+  display: none;
+}
+.ficha details > summary::before {
+  content: "▸";
+  color: var(--fraco);
+  font-size: 0.8rem;
+}
+.ficha details[open] > summary::before {
+  content: "▾";
+}
+
+/* ⚠️ Cada certeza tem cor própria, e a mais fraca NÃO é vermelha: "provável"
+   não é erro, é o que o dado da Receita permite afirmar. Pintar de vermelho
+   ensinaria a ignorar a maioria das ligações verdadeiras. */
+.etiqueta.certeza-confirmada {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.etiqueta.certeza-provavel {
+  border-color: var(--marca);
+  color: var(--texto);
+  background: var(--marca);
+}
+.etiqueta.certeza-possivel {
+  border-color: var(--fraco);
+  color: var(--fraco);
+}
+.etiqueta.destaque {
+  border-color: var(--acento);
+  color: var(--acento);
+}
+
+/* O porquê da ligação, por extenso. */
+.motivo {
+  margin: 0.5rem 0 0;
+  padding: 0.55rem 0.7rem;
+  border-left: 3px solid var(--borda);
+  background: var(--cartao);
+  border-radius: 0 7px 7px 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--fraco);
+}
+
 /* O trecho do resultado que casou com o termo buscado. */
 .trecho {
   margin: 0.4rem 0 0;

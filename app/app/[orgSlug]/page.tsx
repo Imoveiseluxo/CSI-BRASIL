@@ -178,6 +178,29 @@ export default async function WorkspacePage({ params, searchParams }: Props) {
       </section>
 
       <section className="bloco">
+        <h2>Rede de ligações de uma empresa</h2>
+        <p className="fraco">
+          A partir de um CNPJ: os sócios, e as outras empresas ligadas a eles. Cada linha abre, e a
+          rede inteira sai em planilha.
+        </p>
+        {/* ⚠️ `action` com GET manda o campo para a URL como `?cnpj=…`, e a
+            rede mora em `/rede/<cnpj>`. A rota de redirecionamento resolve isso
+            sem precisar de JavaScript na tela. */}
+        <form className="linha" action={`/app/${orgSlug}/rede`}>
+          <label htmlFor="cnpj-rede" className="oculto">
+            CNPJ
+          </label>
+          <input
+            id="cnpj-rede"
+            name="cnpj"
+            placeholder="CNPJ completo ou só a raiz (8 dígitos)"
+            required
+          />
+          <button type="submit">Abrir a rede</button>
+        </form>
+      </section>
+
+      <section className="bloco">
         <h2>Consultar empresa por CNPJ</h2>
         <p className="fraco">
           A consulta guarda o que a fonte respondeu antes de interpretar. Nada aparece aqui sem
