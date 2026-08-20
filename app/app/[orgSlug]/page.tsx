@@ -1,12 +1,16 @@
 import { sairAction } from "@/lib/auth/actions";
 import { requireOrgMember } from "@/lib/auth/guards";
 import { ROLE_LABELS } from "@/lib/auth/permissions";
+import { busca } from "@/lib/busca/queries";
 import { createClient } from "@/lib/supabase/server";
 import { FormularioConsulta } from "./formulario";
 
 export const metadata = { title: "CSI Brasil" };
 
-type Props = { params: Promise<{ orgSlug: string }> };
+type Props = {
+  params: Promise<{ orgSlug: string }>;
+  searchParams: Promise<{ q?: string }>;
+};
 
 /**
  * A primeira tela real do produto.
@@ -16,11 +20,16 @@ type Props = { params: Promise<{ orgSlug: string }> };
  * rastreável"* é proibido, e uma ficha bonita sem a origem ao lado seria
  * exatamente isso.
  */
-export default async function WorkspacePage({ params }: Props) {
+export default async function WorkspacePage({ params, searchParams }: Props) {
   const { orgSlug } = await params;
+  const { q } = await searchParams;
   const { org, role, user } = await requireOrgMember({ orgSlug });
 
   const supabase = await createClient();
+  // ⚠️ O termo fica na URL de propósito: assim a busca sobrevive ao F5 e o link
+  // pode ser guardado ou mandado para alguém.
+  const achados = q ? await busca(supabase, org.id, q) : null;
+
   const { data: empresas } = await supabase
     .from("companies")
     .select(
@@ -45,6 +54,57 @@ export default async function WorkspacePage({ params }: Props) {
           </button>
         </form>
       </header>
+
+      <section className="bloco">
+        <h2>Buscar no que já foi coletado</h2>
+        <p className="fraco">
+          Procura em empresas e nos artefatos brutos guardados. Cada resultado mostra de onde veio.
+        </p>
+        <form className="linha" action={`/app/${orgSlug}`}>
+          <label htmlFor="q" className="oculto">
+            Termo
+          </label>
+          <input id="q" name="q" defaultValue={q ?? ""} placeholder="razão social, cidade, CNPJ…" />
+          <button type="submit">Buscar</button>
+        </form>
+
+        {achados ? (
+          achados.length === 0 ? (
+            <p className="fraco">Nada encontrado para “{q}”.</p>
+          ) : (
+            <ul className="lista">
+              {achados.map((a) => (
+                <li key={`${a.tipo}-${a.id}`} className="ficha">
+                  <div className="ficha-cabeca">
+                    <strong>{a.titulo}</strong>
+                    <span className="etiqueta">{a.tipo}</span>
+                  </div>
+                  <div className="fraco">{a.detalhe}</div>
+                  <div className="procedencia">
+                    <span>fonte: {a.fonte ?? "—"}</span>
+                    <span>
+                      coletado:{" "}
+                      {a.coletadoEm
+                        ? new Date(a.coletadoEm).toLocaleString("pt-BR", {
+                            timeZone: "America/Bahia",
+                          })
+                        : "—"}
+                    </span>
+                    <span>
+                      confiança:{" "}
+                      {a.confianca === null ? (
+                        <em>não informado</em>
+                      ) : (
+                        `${Math.round(a.confianca * 100)}%`
+                      )}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : null}
+      </section>
 
       <section className="bloco">
         <h2>Consultar empresa por CNPJ</h2>

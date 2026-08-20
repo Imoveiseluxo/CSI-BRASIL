@@ -7,6 +7,61 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 20/08/2026, 00h25 — busca, e um defeito que só apareceu porque desconfiei do próprio acerto
+
+A busca é o que faz o dado coletado servir para alguma coisa — e é o que torna o e-mail útil
+quando o Cloudflare entrar, já que o dono definiu e-mail como **fonte de busca**.
+
+### Como foi feita
+
+Busca textual nativa do Postgres, sem OpenSearch — coerente com a decisão de
+**PostgreSQL + pgvector**. Sobre **empresas** e sobre **evidências**.
+
+⚠️ **Coluna gerada, não gatilho.** Coluna gerada é mantida pelo próprio banco e não pode sair
+de sincronia; gatilho depende de alguém lembrar de criá-lo em toda tabela nova, e de ele não
+falhar em silêncio.
+
+⚠️ **A busca em evidência é sobre o artefato CRU.** É o que permite achar um e-mail pelo que
+estava escrito nele **antes** de existir qualquer interpretação. O limite é conhecido e
+assumido: indexar JSON inteiro traz nomes de campo junto, então é mais ruidosa — e ainda
+assim melhor que depender de uma interpretação que não existe.
+
+⚠️ **A lista de resultados não mostra o conteúdo da evidência.** Artefato cru pode conter
+dado pessoal, e lista de busca não é lugar de despejar isso.
+
+### O defeito que a desconfiança achou
+
+A primeira medição funcionou: `camacari` achou a empresa. **Poderia ter parado ali.** Mas o
+município tinha vindo da fonte **sem cedilha** — o acerto podia ser sorte.
+
+Testei a hipótese contrária, contra o banco:
+
+```
+to_tsvector('portuguese','SÃO PAULO') @@ websearch_to_tsquery('portuguese','sao paulo') -> FALSE
+to_tsvector('portuguese','GOIANIA')  @@ websearch_to_tsquery('portuguese','goiânia')    -> FALSE
+```
+
+**Buscar "sao paulo" não achava "SÃO PAULO".** Num produto de inteligência corporativa
+**brasileira**, isso não é detalhe: "São Paulo", "Goiânia", "Brasília" e "Camaçari" são a
+norma, e cada fonte escreve de um jeito.
+
+**Conserto dos dois lados** — e os dois eram obrigatórios: o índice passou a guardar sem
+acento (`unaccent` com invólucro imutável, porque coluna gerada exige isso), e o **termo
+digitado** passa por `semAcento` antes de ir. ⚠️ Consertar só um lado deixaria a busca **meio
+consertada**, que é pior: funcionaria para quem digita sem acento e falharia para quem digita
+certo.
+
+**Medido depois:** as duas comparações passaram a dar `true`, e a empresa real continua sendo
+encontrada.
+
+**Verificação:** **72 testes verdes** · `tsc` 0 erros · publicado.
+
+⚠️ **O que a busca ainda não faz:** ordenar por relevância, destacar o trecho que casou, nem
+filtrar por período ou fonte. E não há tela de evidência — o resultado diz que o artefato
+existe, mas não deixa abri-lo.
+
+---
+
 ## 20/08/2026, 00h15 — "Nenhuma fonte cadastrada": erro de desenho meu, achado no primeiro uso
 
 O dono consultou um CNPJ e recebeu *"Nenhuma fonte cadastrada para registrar a evidência."*
