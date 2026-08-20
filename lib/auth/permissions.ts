@@ -1,6 +1,14 @@
-import type { OrgRole } from "@/types/supabase";
-
-export type { OrgRole };
+/**
+ * ⚠️ Os papéis vivem AQUI, e não em `types/supabase.ts`, porque o banco usa
+ * `text` + CHECK e não um enum do Postgres — então o tipo gerado do banco não
+ * traz a lista. Consequência: a lista existe em dois lugares, e **duas listas
+ * podem divergir sem ninguém ver**.
+ *
+ * Por isso existe `tests/papeis-batem-com-o-banco.test.ts`, que compara esta
+ * lista com o CHECK da migration e reprova se saírem de sincronia.
+ */
+export const PAPEIS = ["owner", "admin", "analyst", "viewer"] as const;
+export type OrgRole = (typeof PAPEIS)[number];
 
 /**
  * A matriz de papéis — **lógica pura, sem banco**, para poder ser testada sem
@@ -25,6 +33,19 @@ export const SECTION_ACCESS: Record<AppSection, OrgRole[]> = {
   workspace: ["owner"],
   integracoes: ["owner", "admin"],
 };
+
+/**
+ * O banco guarda o papel como `text` + CHECK, então o tipo gerado dele é
+ * `string`. **Estreitar aqui, e não com asserção de tipo.**
+ *
+ * ⚠️ A diferença não é estética. Asserção diz ao compilador "confie em mim" e
+ * some com o problema; esta função **verifica**, e um papel desconhecido no
+ * banco — inserido à mão, sobrevivente de uma migration futura — vira erro
+ * visível em vez de virar acesso silencioso.
+ */
+export function ehPapelValido(v: string): v is OrgRole {
+  return (PAPEIS as readonly string[]).includes(v);
+}
 
 /** Recusa por padrão: seção desconhecida devolve `false`, nunca `true`. */
 export function canAccess(role: OrgRole, section: AppSection): boolean {

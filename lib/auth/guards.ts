@@ -1,9 +1,9 @@
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+import type { OrgRole } from "@/lib/auth/permissions";
 import { type AppSection, canAccess } from "@/lib/auth/permissions";
 import { getOrgBySlug, getUserOrgs } from "@/lib/orgs/queries";
 import { createClient } from "@/lib/supabase/server";
-import type { OrgRole } from "@/types/supabase";
 
 /**
  * As guardas de acesso — a **segunda** camada.

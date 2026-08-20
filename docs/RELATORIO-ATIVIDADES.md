@@ -7,6 +7,69 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 23h30 — entrada de e-mail por webhook, e os tipos reais do banco
+
+**Decisão do dono:** seguir a recomendação — **encaminhamento + webhook**, e não IMAP.
+**Nenhuma senha de caixa de e-mail é guardada por nós.** É a razão inteira da escolha:
+credencial de caixa dá acesso amplo e permanente, e guardar uma é assumir risco que não
+precisa existir.
+
+### O nosso lado está pronto
+
+| Peça | O que faz |
+|---|---|
+| `0007_fonte_com_token_de_entrada.sql` | cada fonte que recebe por webhook ganha um token. **Guardamos o hash, nunca o token** |
+| `lib/sources/email-entrada.ts` | lê o e-mail **agnóstico de serviço** — aceita `from`/`sender`/`FromFull`, `text`/`TextBody`, etc. |
+| `app/api/entrada/email/route.ts` | identifica a fonte pelo token, grava o corpo **cru** como evidência com hash |
+
+⚠️ **Unicidade do hash é GLOBAL, não por organização.** Se dois tenants pudessem ter o mesmo
+hash, a rota teria que escolher um — e escolheria errado metade das vezes, entregando conteúdo
+de um cliente para outro.
+
+⚠️ **Token inexistente e fonte desligada recebem a MESMA resposta.** Dizer "essa fonte existe
+mas está inativa" confirmaria a existência do token para quem estivesse adivinhando.
+
+⚠️ **A rota grava primeiro e interpreta depois.** Formato de e-mail muda sem aviso — no outro
+projeto, a especificação de um deles teve que ser lida de uma captura de tela. Guardar o cru
+é o que permite reprocessar quando o formato mudar, sem ter perdido nada.
+
+### Os tipos do banco, e uma previsão minha que se cumpriu
+
+O banco agora existe, então **gerei os tipos dele** (523 linhas, com os relacionamentos
+reais) e apaguei o esboço escrito à mão.
+
+**E aí aconteceu o que eu tinha deixado escrito no código:** *"no dia em que os tipos forem
+gerados, apague o `.returns<>()` e confira que o tipo inferido bate. Se não bater, o código
+está errado, e este comentário terá sido a única pista."*
+
+**Não bateu.** O banco devolve `role: string`, porque usei `text` + CHECK e não um enum do
+Postgres. A asserção estava escondendo isso.
+
+⚠️ **O conserto certo não foi forçar o tipo — foi validar na fronteira.** `ehPapelValido()`
+verifica, e papel desconhecido no banco **lança** em vez de passar adiante. Asserção diz ao
+compilador "confie em mim" e some com o problema; verificação transforma um papel inválido
+(inserido à mão, sobrevivente de migration futura) em erro visível, em vez de acesso
+silencioso.
+
+### A dívida que isso criou, e a costura para ela
+
+Como o banco usa `text` + CHECK, **a lista de papéis passou a existir em dois lugares** — no
+código e no CHECK da migration. **Duas listas divergem em silêncio:** alguém acrescenta
+`gerente` no banco e esquece o código, e a pessoa com esse papel fica sem acesso a nada sem
+que nada quebre.
+
+`tests/papeis-batem-com-o-banco.test.ts` costura os dois. Acrescentei `gerente` só no código,
+de propósito, e **o teste ficou vermelho** antes de restaurar.
+
+**Verificação:** **63 testes verdes** · `tsc` 0 erros.
+
+**O que depende de você (item 25):** um **domínio** (o CSI está em `csi-brasil.vercel.app`, e
+endereço de e-mail precisa de domínio próprio) e um **serviço de entrada** que chame nossa
+rota — Cloudflare Email Routing é gratuito. ⚠️ **Escolher o serviço não muda nosso código**:
+foi para isso que a leitura nasceu agnóstica.
+
+---
+
 ## 19/08/2026, 23h20 — sem on-premise, e o e-mail vira fonte de busca
 
 **Duas decisões do dono**, e a primeira encerra uma contradição que estava aberta desde o

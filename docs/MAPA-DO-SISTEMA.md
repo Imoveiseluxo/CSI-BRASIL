@@ -217,6 +217,7 @@ _Vazio — nascem na Fase 1._
 
 | Rota | Como se defende | O que faz |
 |---|---|---|
+| `POST /api/entrada/email` | **Token da fonte** no cabecalho. Guardamos so o hash. Token inexistente e fonte desligada recebem a MESMA resposta — dizer "existe mas esta inativa" confirmaria o token para quem adivinha | Recebe e-mail encaminhado por um servico externo e grava o corpo **cru** como evidencia com hash. Nao interpreta alem do minimo para achar depois |
 | `GET /api/diagnostico/cnpj` | **Segredo** `DIAGNOSTICO_SECRET` no cabecalho. **Sem o segredo configurado responde 503** — fechada, nao aberta | Consulta um CNPJ pelos provedores e devolve o resultado normalizado, o provedor que atendeu, o tempo e **quem falhou antes**. Nao grava nada |
 
 ⚠️ **Por que ela existe:** a maquina de desenvolvimento nao alcanca os
@@ -249,7 +250,7 @@ organizações e dois usuários, cada sessão simulada dentro do banco enxergou
 | `monitors` | `configuracao` | `lib/monitors/` | o operador (ainda não existe) |
 | `query_versions` | `configuracao` | `lib/monitors/` | o operador, **só INSERT** — histórico não se reescreve |
 | `sources` | `configuracao` | `lib/sources/` | o operador, ao ligar uma fonte (tela ainda não existe) |
-| `evidence` | **`evidencia`** | `lib/sources/` | **a rotina de coleta**, `collected_by_kind='rotina'` — **só INSERT** |
+| `evidence` | **`evidencia`** | `lib/sources/` | **a rotina de coleta** e a **rota `/api/entrada/email`**, ambas com `collected_by_kind='rotina'` — **só INSERT** |
 | `companies` | **`conhecimento`** | `lib/companies/` | **a ingestão** (`lib/companies/ingest.ts`, Tarefa 5 — ainda não existe). Preenche as 7 colunas de procedência a partir da evidência |
 
 ⚠️ **Todas as chaves estrangeiras entre tabelas de domínio são COMPOSTAS com o

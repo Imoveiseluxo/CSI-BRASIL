@@ -5,8 +5,8 @@
  * regra que só pode ser testada com infraestrutura de pé acaba não sendo testada.
  */
 import { describe, expect, it } from "vitest";
+import type { OrgRole } from "@/lib/auth/permissions";
 import { type AppSection, canAccess, ROLE_LABELS, SECTION_ACCESS } from "@/lib/auth/permissions";
-import type { OrgRole } from "@/types/supabase";
 
 const PAPEIS: OrgRole[] = ["owner", "admin", "analyst", "viewer"];
 

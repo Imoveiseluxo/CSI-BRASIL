@@ -1,5 +1,5 @@
+import { ehPapelValido, type OrgRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
-import type { OrgRole } from "@/types/supabase";
 
 export type Organizacao = {
   id: string;
@@ -7,6 +7,20 @@ export type Organizacao = {
   name: string;
   created_at: string;
 };
+
+/**
+ * O banco devolve `string`; aqui vira `OrgRole` **verificado**.
+ *
+ * ⚠️ Papel desconhecido lança em vez de passar adiante. Deixar passar levaria
+ * um valor fora da matriz até `canAccess` — que negaria por padrão, sim, mas em
+ * silêncio, e ninguém descobriria que existe gente com papel inválido no banco.
+ */
+function papel(v: string): OrgRole {
+  if (!ehPapelValido(v)) {
+    throw new Error(`Papel desconhecido no banco: ${v}`);
+  }
+  return v;
+}
 
 export type Vinculo = {
   role: OrgRole;
@@ -42,13 +56,12 @@ export async function getOrgBySlug(slug: string, userId: string): Promise<Vincul
     .select("role, organization:organizations!inner(id, slug, name, created_at)")
     .eq("user_id", userId)
     .eq("organization.slug", slug)
-    .returns<LinhaVinculo[]>()
     .maybeSingle();
 
   if (error) throw error;
   if (!data) return null;
 
-  return { role: data.role, organization: data.organization };
+  return { role: papel(data.role), organization: data.organization };
 }
 
 /**
@@ -64,12 +77,11 @@ export async function getUserOrgs(userId: string): Promise<Vinculo[]> {
     .from("memberships")
     .select("role, organization:organizations!inner(id, slug, name, created_at)")
     .eq("user_id", userId)
-    .order("created_at", { ascending: true })
-    .returns<LinhaVinculo[]>();
+    .order("created_at", { ascending: true });
 
   if (error) throw error;
   return (data ?? []).map((linha) => ({
-    role: linha.role,
+    role: papel(linha.role),
     organization: linha.organization,
   }));
 }
