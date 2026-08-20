@@ -29,7 +29,20 @@ opinião; alerta sem score explicável é ruído com hora marcada. Por isso a or
 | **7 — Investigation, Cases & Graph** | **Transform Registry**, **Playbooks**, casos, relações, grafo v1, **Evidence Vault e Data Lineage** | Investigação corporativa **auditável** | ⬜ |
 | **8 — Copilot & Agents** | Ask Intelligence, multiagentes, evals | IA operacional | ⬜ |
 | **9 — Multimodal** | Imagem, áudio, vídeo, OCR avançado | Cobertura ampliada | ⬜ |
-| **10 — Mobile & Enterprise** | App, SSO, auditoria avançada, SLA | Enterprise | ⬜ |
+| **10 — Mobile & Enterprise** | App, SSO, auditoria avançada, SLA | Enterprise | ⬜ ⚠️ **sem on-premise** |
+
+⚠️ **Decisão do dono, 19/08/2026: o CSI Brasil é SOMENTE operado por ele — nunca instalado no
+cliente.** A *"Enterprise deployment option"* que o Book v2 lista na Fase 10 **sai do
+escopo**. Ninguém deve construir em direção a ela.
+
+Duas consequências que valem estar escritas:
+
+1. **A porta jurídica do `elite-programa` fica aberta em definitivo.** A licença da Awave
+   permite faturar com o **serviço**, não com o software — e nunca vai existir software
+   entregue. Isso encerra a contradição que o v2 tinha aberto.
+2. **Cliente que exigir isolamento** recebe organização separada na **nossa** infraestrutura,
+   e não instalação na dele. A multi-tenancy que a Fase 1 provou é justamente o que torna
+   essa resposta possível.
 
 ## O MVP vendável — o que o book manda NÃO incluir
 

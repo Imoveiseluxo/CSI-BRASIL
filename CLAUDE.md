@@ -17,6 +17,7 @@ evidência rastreável para decisão**.
 2. **O domínio é inteligência corporativa BRASILEIRA** — CNPJ, PNCP e CVM prioritários. Não é
    geopolítica internacional.
 
+- **Modelo:** plataforma **somente operada pelo dono**, vendendo acesso. **Nunca instalada no cliente** (decisão de 19/08/2026). Cliente que exigir isolamento recebe organização separada na nossa infraestrutura — é para isso que a multi-tenancy existe.
 - **Especificação:** `docs/spec/BOOK-CSI-BRASIL.md` (**Book v2.0, 19/08/2026**). O PDF original é a fonte autoritativa. ⚠️ O v2 acrescentou o **Investigation Engine** (Transform Registry, Playbooks, Graph/Case Workspace, Data Lineage) e passou de **8 para 10 motores** — as decisões tomadas em 19/08 até 01h foram sobre o v1, preservado em `docs/spec/BOOK-CSI-BRASIL-v1.md`.
 - **Roadmap:** `docs/ROADMAP.md` — 11 fases (0 a 10), com o recorte do MVP vendável.
 - **Repositório:** `Imoveiseluxo/CSI-BRASIL`

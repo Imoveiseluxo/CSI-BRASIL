@@ -7,6 +7,50 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 23h20 — sem on-premise, e o e-mail vira fonte de busca
+
+**Duas decisões do dono**, e a primeira encerra uma contradição que estava aberta desde o
+Book v2.
+
+### On-premise: não
+
+**O CSI Brasil é somente operado pelo dono — nunca instalado no cliente.** A *"Enterprise
+deployment option"* que o v2 lista na Fase 10 **sai do escopo**, e isso ficou escrito no
+roadmap para ninguém construir em direção a ela.
+
+**Duas consequências que valem estar registradas:**
+
+1. **A porta jurídica do `elite-programa` fica aberta em definitivo.** A licença da Awave
+   permite faturar com o **serviço**, não com o software — e nunca vai existir software
+   entregue. Era exatamente essa dúvida que o v2 tinha reaberto às 18h45.
+2. **Cliente que exigir isolamento recebe organização separada na nossa infraestrutura**, não
+   instalação na dele. **A multi-tenancy que a Fase 1 provou é o que torna essa resposta
+   possível** — sem ela, a única saída seria instalar no cliente, e a decisão de hoje seria
+   impossível de sustentar.
+
+### E-mail: fonte de busca, como as demais
+
+Não é caixa de entrada a ser lida por gente: é **fonte**. O conteúdo entra no mesmo caminho de
+todas as outras — vira **evidência guardada com hash**, e passa a ser pesquisável junto com o
+resto. O desenho de `sources` e `evidence` já comporta isso sem mudança.
+
+⚠️ **Mas falta o mecanismo, e ele muda o conector inteiro** (item 24):
+
+| Como | O que exige |
+|---|---|
+| Caixa que **lemos** (IMAP) | **senha da caixa de e-mail** — credencial de acesso amplo, guardada por nós |
+| Endereço que **recebe** (encaminhamento + webhook) | **nenhuma credencial de caixa** — por isso é a mais segura |
+| Exportação manual de arquivos | trabalho humano recorrente |
+
+⚠️ **E vale a advertência que o outro projeto deu hoje:** formato de e-mail muda sem aviso, e
+a especificação de um deles teve que ser lida de uma **captura de tela**. Qualquer que seja o
+mecanismo, o conteúdo cru vira evidência com hash **antes** de qualquer interpretação — que é
+justamente o que o contrato de procedência já garante.
+
+**Nenhuma linha de código nesta entrada.** São decisões e registro.
+
+---
+
 ## 19/08/2026, 23h15 — a rota de diagnóstico fica, e o que "ficar" exigiu
 
 **Decisão do dono:** manter a rota de diagnóstico. Pendência 23 fechada.
