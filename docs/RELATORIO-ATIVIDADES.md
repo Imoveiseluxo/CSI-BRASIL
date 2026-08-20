@@ -7,6 +7,37 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 21h40 — publicado na Vercel
+
+**Pedido do dono:** publicar o CSI Brasil agora.
+
+**No ar:** https://csi-brasil.vercel.app — **HTTP 200**, e o conteúdo confere ("CSI Brasil /
+Fundação em construção"). Projeto `csi-brasil` no escopo `jefferson-cs-projects`, o mesmo do
+Bahia Realty. Deploy `● Ready` em Production, 20s de build.
+
+⚠️ **Duas URLs, e só uma serve de prova.** A URL do **deploy**
+(`csi-brasil-6afce1r7r-...vercel.app`) responde **302** — proteção de acesso da Vercel. A
+**pública** responde 200. Medir pela primeira testaria a página de login, não o site: é a
+mesma armadilha que já custou uma conferência falsa no outro projeto.
+
+⚠️ **O que está no ar é uma página de espera, e é importante não confundir com produto.** Não
+há workspace, login, banco nem dado. **As variáveis do Supabase não existem** —
+`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` estão ausentes, porque não há
+projeto Supabase. O build passa sem elas só porque a página atual não toca no banco: **é
+verde que não prova nada sobre o encanamento de dados**, e no dia em que a primeira tela ler
+o banco, o deploy quebra se elas não estiverem lá.
+
+**O que isto entrega de útil, apesar disso:** o caminho de publicação existe e foi exercitado
+de ponta a ponta. Quando houver o que mostrar, já se sabe que publicar funciona.
+
+**Sobre um código que o dono enviou:** ele passou `NU46DHMZ6SKGBDSBTK2ITRQBDONVDXJY` como se
+fosse token da Vercel. **Testei: foi recusado.** Pelo formato — 32 caracteres em base32
+maiúscula — é quase certamente **semente de autenticação em dois fatores** ou código de
+recuperação. Ficou registrado o aviso para ele reconfigurar o 2FA da Vercel. E nenhum token
+era necessário: a CLI desta máquina já está autenticada.
+
+---
+
 ## 19/08/2026, 21h30 — Fase 1 fechada até onde dá sem banco
 
 **Fechamento da tarefa.** O mapa e o plano passaram a dizer o estado real, que é o passo que

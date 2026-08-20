@@ -42,3 +42,5 @@ supabase/.temp/
 # processo descartável. Aqui os planos das Fases 0 e 1 SÃO a especificação
 # executável e estão versionados de propósito. Copiar aquela linha faria o
 # repositório parar de rastrear os dois planos — sem erro, sem aviso.
+
+.vercel
