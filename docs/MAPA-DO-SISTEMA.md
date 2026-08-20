@@ -114,9 +114,20 @@ Cada linha registra: horário, nome, o que faz, e **o que ela mede para saber qu
 
 ## 5. Onde ficam as credenciais
 
-_Vazio — preenchido quando houver o primeiro segredo._
+| Credencial | Onde vive | Da para ler de volta? |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | variavel de ambiente na Vercel, nos 3 ambientes | sim — e nao e segredo |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | idem | sim — publica por desenho, protegida pela RLS |
+| `DIAGNOSTICO_SECRET` | variavel de ambiente na Vercel, nos 3 ambientes | **nao** pelo painel. Substituir e gerar outra |
+| Senha do banco Postgres | **arquivo unico** na maquina do dono | **nao.** O Supabase nao mostra de novo — so permite redefinir |
 
-Cada linha registra: qual credencial, onde vive, e **se dá para ler de volta**.
+⚠️ **A senha do banco tem UMA copia.** Perde-se e so resta redefinir. Ela nao e
+usada pelo app — o app usa a URL e a chave anon; a senha e para conexao direta
+(psql, ferramenta de migration, cliente de banco).
+
+⚠️ **`DIAGNOSTICO_SECRET` ausente FECHA a rota (503), nao abre.** Ha teste
+travando esse comportamento — sem ele, um ambiente novo sem a variavel nasceria
+com endpoint publico que consulta em nosso nome.
 
 ---
 

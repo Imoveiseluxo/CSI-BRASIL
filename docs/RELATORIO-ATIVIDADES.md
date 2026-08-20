@@ -7,6 +7,37 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 23h15 — a rota de diagnóstico fica, e o que "ficar" exigiu
+
+**Decisão do dono:** manter a rota de diagnóstico. Pendência 23 fechada.
+
+**Manter tem consequência, e ela não é deixar o arquivo lá.** Rota permanente que dispara
+requisição externa precisa ter o comportamento de segurança **travado por teste**, não por
+lembrança de quem escreveu.
+
+**5 testes novos**, e o que mais importa é o primeiro: **sem `DIAGNOSTICO_SECRET`
+configurado, a rota responde 503 — fechada, nunca aberta.** Se ela abrisse, qualquer ambiente
+novo (um preview, um deploy de teste) nasceria com endpoint público que consulta em nosso
+nome e gasta nossa cota.
+
+Quebrei o 503 de propósito, trocando por "segue adiante", e **exatamente esse teste ficou
+vermelho** antes de restaurar.
+
+Os outros quatro: 401 sem cabeçalho, 401 com segredo errado, 200 com o segredo certo, e —
+esse também vale — **sem `?cnpj=` responde 400 e `fetch` não é chamado**. Requisição externa
+não se dispara por engano.
+
+**E o mapa ganhou a seção 5**, que estava vazia: onde vive cada credencial e **se dá para ler
+de volta**.
+
+⚠️ **A senha do banco tem UMA cópia**, num arquivo na máquina do dono. O Supabase não a
+mostra de novo — só permite redefinir. Ela não é usada pelo app (que usa a URL e a chave
+anon); é para conexão direta.
+
+**Verificação:** **55 testes verdes** · `tsc` 0 erros.
+
+---
+
 ## 19/08/2026, 23h05 — a consulta real funciona, e ela revelou um provedor falhando em silêncio
 
 **Pendência 22 fechada.** A máquina de desenvolvimento não alcança os provedores, então medi
