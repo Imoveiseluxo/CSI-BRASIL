@@ -7,6 +7,50 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 21h05 — as duas travas da Fase 1, provadas antes de existir a primeira tabela
+
+**Tarefas 1 e 1b do plano da Fase 1, concluídas.** São as únicas totalmente verificáveis sem
+banco — e as duas precisam existir **antes** da primeira tabela, pelo mesmo argumento:
+*regra que nasce depois da primeira violação já nasceu tarde.*
+
+**O que entrou:**
+
+| Arquivo | O que trava |
+|---|---|
+| `tests/toda-tabela-e-multi-tenant.test.ts` | Tabela sem `organization_id`, sem RLS, ou com `FORCE ROW LEVEL SECURITY` |
+| `docs/CONTRATO-DE-PROCEDENCIA.md` | O contrato: duas classes declaradas, e as 7 colunas de procedência |
+| `tests/rastreabilidade-do-conhecimento.test.ts` | Tabela sem classe declarada, classe inválida, `conhecimento` sem procedência, e `confidence` com `default`/`not null` |
+
+**Uma decisão de implementação que vale registrar:** a primeira trava confere
+`organization_id` **dentro do corpo da própria tabela**, não em qualquer lugar do arquivo.
+Sem isso, numa migration que cria duas tabelas, a segunda passaria de carona na declaração da
+primeira — e o teste ficaria verde sobre um buraco.
+
+**As quatro provas, todas vistas vermelhas:**
+
+| Migration errada de propósito | Falhou em |
+|---|---|
+| Tabela crua, sem nada | `organization_id`, RLS **e** classe — 3 testes |
+| `-- @classe: qualquer` | "a classe declarada é uma das duas" |
+| `-- @classe: conhecimento` sem as colunas | as **7** faltas, nomeadas uma a uma |
+| `confidence numeric(3,2) not null default 1` | "confidence não nasce com default" |
+
+⚠️ **O quarto caso é o que mais importa**, e por isso foi escrito à mão exatamente como
+alguém escreveria sem pensar: `default 1` é o jeito mais natural, e produz precisamente o
+campo que ninguém preencheu com um número que parece medido.
+
+**Verificação:** `tsc --noEmit` 0 erros · **14 testes verdes** · `biome check` limpo ·
+`next build` completo.
+
+**O que ficou aberto, e por quê:** as Tarefas 2, 4 e 5 escrevem migrations, e cada uma tem
+passo de **aplicar e conferir no banco** — *"conferir que a RLS realmente corta"*, com dois
+usuários de organizações diferentes. **Não existe projeto Supabase ainda.** Escrever a SQL
+sem aplicar criaria exatamente a dívida que no outro projeto deixou um alerta de segurança no
+ar por dias: migration escrita, nunca aplicada, e o repositório mentindo sobre o banco.
+**Parei aqui de propósito** — o próximo passo depende de criar o projeto Supabase.
+
+---
+
 ## 19/08/2026, 20h57 — correção: o acesso a CPF existe, via CDL
 
 **Corrijo uma afirmação minha de sete minutos atrás.** Escrevi que consulta de CPF *"ou é de

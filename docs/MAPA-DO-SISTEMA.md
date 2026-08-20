@@ -69,7 +69,23 @@ conferido, frequência, e o arquivo do conector.
 
 ## 3. As travas que protegem a evidência
 
-_Vazio — as travas nascem junto com os conectores._
+| Trava | O que garante | O que ela **NÃO** cobre |
+|---|---|---|
+| `tests/toda-tabela-e-multi-tenant.test.ts` | Nenhuma tabela entra sem `organization_id`, sem RLS, ou com `FORCE ROW LEVEL SECURITY` | **O estado do banco.** Ela lê SQL do repositório; migration escrita não é migration aplicada |
+| `tests/rastreabilidade-do-conhecimento.test.ts` | Toda tabela **declara a classe**, e tabela de `conhecimento` carrega as 7 colunas de procedência, com `confidence` sem `default` nem `not null` | **Que alguém escreva** nessas colunas. Garante que existam, não que sejam preenchidas |
+
+Contrato completo em `docs/CONTRATO-DE-PROCEDENCIA.md`.
+
+⚠️ **A segunda trava age sobre a DECLARAÇÃO, não sobre o nome da tabela.** Um
+teste que tentasse deduzir a classe pelo nome erraria nos dois sentidos e daria
+falsa segurança — pior que não ter trava. E ela lê SQL por expressão regular:
+não entende SQL. **Quem prova que ela funciona é o passo de quebrar de propósito
+— quatro casos, todos vistos vermelhos em 19/08/2026.**
+
+⚠️ **Quem preenche cada coluna de procedência entra AQUI junto com o conector**,
+na mesma tarefa. No projeto anterior, três campos existiam, nenhuma linha de
+código escrevia neles, e painéis e alertas ficaram pendurados em zero por
+semanas.
 
 ⚠️ **Regra que o Book v2 (19/08/2026) escreve em caixa alta, e que vale desde a primeira
 tabela:** *"o grafo não é decoração. Cada nó e cada aresta devem ser rastreáveis a
