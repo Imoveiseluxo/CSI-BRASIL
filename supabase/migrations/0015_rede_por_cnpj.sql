@@ -109,6 +109,11 @@ as $$
   left join public.rf_empresas ed on ed.cnpj_basico = s2.cnpj_basico
   left join public.rf_qualificacoes q on q.codigo = s.qualificacao_socio
   where coalesce(s.documento_socio, '') <> ''
+    -- ⚠️ A empresa de partida não é "empresa ligada" a si mesma. Sem isto ela
+    -- aparece na própria lista de ligações — porque a caminhada alcança o
+    -- vizinho e o vizinho aponta de volta. Medido em 20/08/2026: a rede de uma
+    -- empresa com um único vínculo mostrava duas linhas, sendo uma ela mesma.
+    and s2.cnpj_basico <> p_cnpj_basico
   order by a.salto, s.nome_socio
   limit p_limite;
 $$;

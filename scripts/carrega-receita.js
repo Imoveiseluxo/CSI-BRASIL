@@ -173,6 +173,37 @@ function descompacta(zip, pasta) {
   return csv;
 }
 
+/**
+ * Conta as linhas de um arquivo, **em fluxo**.
+ *
+ * ⚠️ Ler o arquivo inteiro na memória para contar quebraria com o `Socios0`,
+ * que tem 960 MB — em JavaScript isso vira quase 2 GB de texto. Contar byte a
+ * byte usa memória constante, qualquer que seja o tamanho.
+ *
+ * ⚠️ **Só é comparável com o que o COPY inseriu porque foi medido que nenhum
+ * registro atravessa mais de uma linha**: em 20/08/2026, todas as 9.820.028
+ * linhas do `Socios0` tinham exatamente 11 campos. Se um dia um arquivo tiver
+ * quebra de linha dentro de aspas, esta contagem passa a ser maior que o número
+ * de registros e o carregador vai acusar divergência — o que é o comportamento
+ * certo: melhor parar e alguém olhar do que carregar torto.
+ */
+function contaLinhas(caminho) {
+  return new Promise((resolve, reject) => {
+    let n = 0;
+    let ultimoByte = 10;
+    fs.createReadStream(caminho)
+      .on("data", (bloco) => {
+        for (let i = 0; i < bloco.length; i++) {
+          if (bloco[i] === 10) n++;
+        }
+        ultimoByte = bloco[bloco.length - 1];
+      })
+      // Arquivo que não termina em quebra de linha tem uma linha a mais.
+      .on("end", () => resolve(ultimoByte === 10 ? n : n + 1))
+      .on("error", reject);
+  });
+}
+
 async function principal() {
   const arquivo = process.argv[2];
   const tabela = process.argv[3];
@@ -196,11 +227,26 @@ async function principal() {
   const url = `${ESPELHO}/${mes}/${arquivo}`;
   const zip = path.join(pasta, arquivo);
 
+  // ⚠️ **Carga em pedaços**, para arquivos grandes demais para uma execução só.
+  //
+  // O `Socios0` tem 960 MB de CSV e leva mais de uma hora subindo — e uma
+  // execução longa demais foi interrompida no meio em 20/08/2026. Partir o CSV
+  // e carregar pedaço a pedaço troca "uma hora que pode morrer inteira" por
+  // "vários minutos que, se morrerem, custam só um pedaço".
+  //
+  // ⚠️ **Cada pedaço é uma carga própria em `rf_carga`**, com o rótulo dizendo
+  // qual pedaço é — mas guardando a MESMA `origem_url` e o MESMO hash do
+  // arquivo original. A procedência continua apontando para o arquivo de
+  // verdade que a Receita publicou, não para o corte que eu fiz aqui.
+  const csvDireto = argumento("csv", null);
+  const rotulo = argumento("rotulo", arquivo);
+
   const t0 = Date.now();
-  await baixa(url, zip);
+  if (!csvDireto) await baixa(url, zip);
   const hash = sha256(zip);
   const mb = (fs.statSync(zip).size / 1024 / 1024).toFixed(0);
   console.log(`  ${mb} MB  ${hash.slice(0, 23)}…`);
+  if (csvDireto) console.log(`  pedaço: ${rotulo}`);
 
   const cliente = conecta();
   await cliente.connect();
@@ -212,6 +258,31 @@ async function principal() {
   // linhas é um comando só, e demora minutos por natureza.
   await cliente.query("set statement_timeout = 0");
   await cliente.query("set idle_in_transaction_session_timeout = 0");
+
+  // ⚠️ **UM carregador por vez, garantido pelo banco.**
+  //
+  // Isto não é excesso de zelo: aconteceu em 20/08/2026. Dois carregadores
+  // rodaram ao mesmo tempo — um deles um trabalho de fundo que eu dei como
+  // encerrado sem conferir — e o resultado foi 4 milhões de linhas SEM
+  // procedência.
+  //
+  // A causa é que a procedência entra por VALOR PADRÃO da coluna, e valor
+  // padrão é estado da tabela, compartilhado: o carregador A define o padrão
+  // dele, B define o dele por cima, A termina e APAGA o padrão — e o `COPY` de
+  // B insere tudo com `carga_id` nulo. Trocar uma corrida por outra é fácil; o
+  // que resolve de fato é não deixar os dois correrem.
+  //
+  // A trava é do banco, não do script: vale mesmo se alguém chamar o
+  // carregador de outro terminal, de outra máquina ou por outro caminho.
+  const TRAVA = 823_400_001; // número arbitrário e fixo, só para esta rotina
+  const trava = await cliente.query("select pg_try_advisory_lock($1) as peguei", [TRAVA]);
+  if (!trava.rows[0].peguei) {
+    await cliente.end();
+    throw new Error(
+      "Já existe outra carga da Receita rodando neste banco. Espere ela terminar. " +
+        "Duas cargas ao mesmo tempo deixam linhas sem procedência — aconteceu em 20/08/2026.",
+    );
+  }
   const conf = await cliente.query("show statement_timeout");
   console.log(`  limite de tempo por comando: ${conf.rows[0].statement_timeout}`);
 
@@ -222,7 +293,10 @@ async function principal() {
   // chamar o script por outro caminho; aqui a mensagem só é mais clara.
   const jaFeita = await cliente.query(
     "select id, linhas, concluida_em from public.rf_carga where arquivo = $1 and mes_base = $2 and concluida_em is not null",
-    [arquivo, mes],
+    // ⚠️ Pelo RÓTULO, não pelo nome do arquivo: cada pedaço precisa poder ser
+    // carregado uma vez. Com o nome do arquivo, o segundo pedaço seria recusado
+    // como se fosse repetição do primeiro.
+    [rotulo, mes],
   );
   if (jaFeita.rows.length > 0) {
     const j = jaFeita.rows[0];
@@ -256,13 +330,13 @@ async function principal() {
   const { rows } = await cliente.query(
     `insert into public.rf_carga (arquivo, tabela_destino, mes_base, origem_url, origem_tipo, content_hash)
      values ($1, $2, $3, $4, 'espelho', $5) returning id`,
-    [arquivo, tabela, mes, url, hash],
+    [rotulo, tabela, mes, url, hash],
   );
   const cargaId = rows[0].id;
 
   try {
-    const csv = descompacta(zip, pasta);
-    console.log(`  descompactado: ${path.basename(csv)}`);
+    const csv = csvDireto ?? descompacta(zip, pasta);
+    console.log(`  ${csvDireto ? "usando" : "descompactado"}: ${path.basename(csv)}`);
 
     const forceNull = NULOS[tabela]?.length ? `, force_null (${NULOS[tabela].join(", ")})` : "";
     // ⚠️ O Postgres faz o parsing do CSV, não o Node. Ele respeita aspas, `;`
@@ -299,7 +373,30 @@ async function principal() {
       `select count(*)::bigint as n from public.${tabela} where carga_id = $1`,
       [cargaId],
     );
-    const linhas = c.rows[0].n;
+    const linhas = Number(c.rows[0].n);
+
+    // ⚠️ **Zero linha de um arquivo cheio é FALHA, não conclusão.**
+    //
+    // Em 20/08/2026 uma carga imprimiu "✔ 0 linhas em 50s" para um arquivo de
+    // 196 MB, e ficou registrada como concluída. É exatamente a regra deste
+    // projeto: sucesso não é evidência. Um "✔" com zero é a pior das duas
+    // mensagens possíveis — parece que deu certo, e o buraco na rede fica.
+    const linhasNoArquivo = await contaLinhas(csv);
+    if (linhas === 0 && linhasNoArquivo > 0) {
+      throw new Error(
+        `o arquivo tem ${linhasNoArquivo.toLocaleString("pt-BR")} linhas, mas ZERO entraram com esta procedência. ` +
+          "Provável causa: outra carga rodando ao mesmo tempo trocou o valor padrão da coluna. " +
+          "A carga fica registrada como não concluída, de propósito.",
+      );
+    }
+    // ⚠️ Divergência entre o que o arquivo tinha e o que entrou também é falha:
+    // carga pela metade que se parece com carga inteira deixa buraco invisível.
+    if (linhas !== linhasNoArquivo) {
+      throw new Error(
+        `o arquivo tem ${linhasNoArquivo.toLocaleString("pt-BR")} linhas e entraram ${linhas.toLocaleString("pt-BR")}. ` +
+          "A carga fica registrada como não concluída até alguém entender a diferença.",
+      );
+    }
 
     await cliente.query(
       "update public.rf_carga set concluida_em = now(), linhas = $1 where id = $2",
