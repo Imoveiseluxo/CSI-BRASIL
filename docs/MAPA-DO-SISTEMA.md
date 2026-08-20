@@ -230,6 +230,14 @@ organizações e dois usuários, cada sessão simulada dentro do banco enxergou
 | `query_versions` | `configuracao` | `lib/monitors/` | o operador, **só INSERT** — histórico não se reescreve |
 | `sources` | `configuracao` | `lib/sources/` | o operador, ao ligar uma fonte (tela ainda não existe) |
 | `evidence` | **`evidencia`** | `lib/sources/` | **a rotina de coleta**, `collected_by_kind='rotina'` — **só INSERT** |
+| `companies` | **`conhecimento`** | `lib/companies/` | **a ingestão** (`lib/companies/ingest.ts`, Tarefa 5 — ainda não existe). Preenche as 7 colunas de procedência a partir da evidência |
+
+⚠️ **Todas as chaves estrangeiras entre tabelas de domínio são COMPOSTAS com o
+tenant** (`(id, organization_id)`), desde 19/08/2026. Sem isso, uma linha da
+Org A conseguia apontar para uma linha da Org B — medido e confirmado antes de
+consertar. Chave composta é estrutura: o banco recusa mesmo em rotina com papel
+de serviço, que ignora RLS. **Tabela nova com referência a outra tabela de
+domínio nasce com chave composta**, não com `references x(id)`.
 
 ⚠️ **A coluna "quem escreve nela" não é enfeite, e hoje ela está toda em "ainda
 não existe" de propósito.** No projeto anterior, três campos de atendimento

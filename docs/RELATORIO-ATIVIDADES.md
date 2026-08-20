@@ -7,6 +7,69 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 22h35 — a primeira tabela de conhecimento, e o caminho de procedência fechando
+
+**Tarefas 3 e 4 da Fase 2 concluídas.** O contrato de procedência deixou de ser teoria.
+
+### Validação e normalização — lógica pura, sem rede
+
+`lib/sources/cnpj-validacao.ts` e `cnpj-normaliza.ts`, com **16 testes**.
+
+⚠️ **O caso que quase todo validador ingênuo deixa passar:** CNPJ com todos os dígitos
+iguais **passa na conta do módulo 11**. Sem a linha que o barra, `00000000000000` viraria
+consulta à fonte, gastaria cota e viraria evidência de uma pergunta que nunca deveria ter
+sido feita. Tem teste cobrindo os dez casos.
+
+⚠️ **A regra que rege a normalização: campo ausente vira `null`, nunca zero, nunca string
+vazia.** `capital_social` ausente **não** pode virar `0` — zero é uma afirmação ("esta
+empresa tem capital zero") que ninguém mediu. Quebrei a função de propósito para devolver
+zero e **só esse teste ficou vermelho**, antes de restaurar.
+
+E a normalização **lança** quando a resposta não tem CNPJ válido ou razão social: a fonte
+também erra, e resposta sem identidade não é uma empresa incompleta — não é uma empresa.
+
+### `companies` — a primeira `@classe: conhecimento`
+
+Com as 7 colunas de procedência. `evidence_id` é **`not null`**: empresa sem evidência não é
+conhecimento, é palpite. `confidence` sem `default` e sem `not null`, como o contrato manda —
+e a trava reprovaria quem acrescentasse.
+
+⚠️ **A migration falhou na primeira tentativa, e o erro era meu:** escrevi um comentário
+dizendo que a unicidade `(id, organization_id)` de `evidence` "já existia". Não existia — a
+0005 deu essa unicidade a `projects`, `monitors` e `sources`, mas não a `evidence`, que ainda
+não tinha filho. **O banco recusou com mensagem clara** (`42830`) em vez de aceitar calado.
+Corrigido, e o comentário falso removido junto.
+
+### A prova que fecha a fase
+
+O plano definiu o critério: *"dado um CNPJ, existe no banco uma empresa cuja origem eu
+consigo apontar — qual fonte, qual artefato, quando, e com que confiança — e o artefato
+original está guardado para conferir."*
+
+Fiz o caminho inteiro e **voltei por ele**:
+
+```
+razao_social       PETROLEO BRASILEIRO S A PETROBRAS
+confianca          0.95
+produzido_por      rotina
+fonte              BrasilAPI - CNPJ
+endpoint           https://brasilapi.com.br/api/cnpj/v1
+coletado_em        20/08 01:15
+hash               sha256-exemplo
+razao_no_artefato  PETROLEO BRASILEIRO S A PETROBRAS
+```
+
+**A empresa aponta a evidência, a evidência aponta a fonte, e o texto guardado no artefato
+bate com o campo derivado.** Cenário apagado em seguida.
+
+**Verificação:** **32 testes verdes** · `tsc` 0 erros.
+
+**Falta a Tarefa 5:** o conector que de fato chama a rede. É onde entra a decisão do dono —
+**todas as fontes gratuitas agora, CDL e pagas preparadas para depois** — e onde a pendência
+21 (endpoint controlável = risco de o servidor buscar endereço interno) precisa ser resolvida.
+
+---
+
 ## 19/08/2026, 22h25 — revisão de segurança achou um vazamento entre organizações, e ela tinha razão
 
 Uma revisão automática dos commits apontou três achados. **Não aceitei nem descartei de
