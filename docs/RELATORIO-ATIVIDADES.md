@@ -7,6 +7,52 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 20/08/2026, 00h35 — a tela de evidência: procedência que dá para conferir
+
+Até agora a ficha da empresa **dizia** "veio da fonte X, com este hash" — e ninguém conseguia
+verificar. **Procedência que não pode ser aberta é afirmação, não evidência.**
+
+`/app/[orgSlug]/evidencia/[id]` mostra, de uma vez: a fonte, quando foi coletado, por quem, a
+impressão digital completa, **o que foi derivado daquilo**, e o **artefato cru** como a fonte
+respondeu.
+
+**O caminho até ela é o próprio hash.** Na ficha da empresa, o hash virou link — quem duvida
+do dado clica e vê o original.
+
+### Três decisões que valem estar escritas
+
+⚠️ **Mostra o artefato CRU, e isso é deliberado.** Evidência que só pode ser vista depois de
+interpretada não é evidência — é o resumo de alguém. O book pede cadeia de evidência, e cadeia
+que ninguém consegue inspecionar não prova nada.
+
+⚠️ **Consequência assumida:** artefato cru pode conter dado pessoal — e-mail de contato,
+sócio de MEI. Por isso a **lista de busca não mostra conteúdo**; só esta tela, onde a pessoa
+escolheu abrir um artefato específico e pertence à organização.
+
+⚠️ **404, e não "sem permissão".** Dizer *"existe, mas não é sua"* confirmaria a existência de
+um id de outra organização — que é informação, e informação que não é nossa para dar.
+
+### A prova
+
+Montei uma **segunda organização** com uma evidência dela, e tentei lê-la com a sessão do
+dono:
+
+```
+dono tentando ler a evidência alheia -> []
+evidências próprias visíveis         -> 2
+```
+
+**Barrado pela RLS**, não pela tela — a tela só transforma "não achei" em 404. Organização de
+teste apagada em seguida; restou uma, a do dono.
+
+⚠️ Um detalhe de estilo que é decisão: o artefato usa `overflow: auto`, **não** quebra de
+linha. JSON quebrado no meio deixa de ser copiável e conferível — que é a razão de a tela
+existir.
+
+**Verificação:** **72 testes verdes** · `tsc` 0 erros · publicado e provado contra o banco.
+
+---
+
 ## 20/08/2026, 00h25 — busca, e um defeito que só apareceu porque desconfiei do próprio acerto
 
 A busca é o que faz o dado coletado servir para alguma coisa — e é o que torna o e-mail útil

@@ -209,7 +209,20 @@ pendência**, não como esquecimento.
 
 ## 11. As telas
 
-_Vazio — nascem na Fase 1._
+| Tela | Guarda | O que mostra |
+|---|---|---|
+| `/entrar` | nenhuma (e' o login). Quem ja tem sessao e' mandado ao workspace | e-mail e senha |
+| `/sem-organizacao` | sessao | quem tem login mas nenhum vinculo. **Nao oferece criar organizacao** — quem libera acesso e' o operador |
+| `/app/[orgSlug]` | `requireOrgMember` | busca, consulta de CNPJ, e a lista de empresas **com a procedencia ao lado do dado** |
+| `/app/[orgSlug]/evidencia/[id]` | `requireOrgMember` + RLS | a fonte, o hash completo, o que foi derivado, e o **artefato cru** |
+
+⚠️ **A procedencia nao fica em aba escondida.** O book proibe "dado na tela sem
+origem rastreavel", e ficha bonita com a origem escondida seria exatamente isso.
+O hash na ficha e' link para a evidencia: quem duvida clica e ve o original.
+
+⚠️ **Evidencia de outra organizacao responde 404, nao "sem permissao"** — dizer
+"existe mas nao e' sua" confirmaria a existencia do id. Provado em 20/08/2026
+com uma segunda organizacao de teste, apagada em seguida.
 
 ---
 

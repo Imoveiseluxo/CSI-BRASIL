@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { sairAction } from "@/lib/auth/actions";
 import { requireOrgMember } from "@/lib/auth/guards";
 import { ROLE_LABELS } from "@/lib/auth/permissions";
@@ -33,7 +34,7 @@ export default async function WorkspacePage({ params, searchParams }: Props) {
   const { data: empresas } = await supabase
     .from("companies")
     .select(
-      "id, cnpj, razao_social, nome_fantasia, situacao, uf, municipio, cnae_principal, capital_social, confidence, produced_by_kind, produced_at, evidence:evidence!companies_evidence_mesma_org(collected_at, content_hash), source:sources!companies_source_mesma_org(name)",
+      "id, cnpj, razao_social, nome_fantasia, situacao, uf, municipio, cnae_principal, capital_social, confidence, produced_by_kind, produced_at, evidence_id, evidence:evidence!companies_evidence_mesma_org(collected_at, content_hash), source:sources!companies_source_mesma_org(name)",
     )
     .eq("organization_id", org.id)
     .order("produced_at", { ascending: false })
@@ -76,7 +77,13 @@ export default async function WorkspacePage({ params, searchParams }: Props) {
               {achados.map((a) => (
                 <li key={`${a.tipo}-${a.id}`} className="ficha">
                   <div className="ficha-cabeca">
-                    <strong>{a.titulo}</strong>
+                    {a.tipo === "evidencia" ? (
+                      <Link href={`/app/${orgSlug}/evidencia/${a.id}`}>
+                        <strong>{a.titulo}</strong>
+                      </Link>
+                    ) : (
+                      <strong>{a.titulo}</strong>
+                    )}
                     <span className="etiqueta">{a.tipo}</span>
                   </div>
                   <div className="fraco">{a.detalhe}</div>
@@ -166,9 +173,20 @@ export default async function WorkspacePage({ params, searchParams }: Props) {
                       )}
                     </span>
                     <span>por: {e.produced_by_kind}</span>
-                    <span className="hash" title={ev?.content_hash ?? ""}>
-                      {ev?.content_hash ? `${ev.content_hash.slice(0, 22)}…` : "sem evidência"}
-                    </span>
+                    {/* ⚠️ O hash e' o link: quem duvida do dado clica e ve o
+                        artefato bruto. Procedencia que nao pode ser aberta e'
+                        afirmacao, nao evidencia. */}
+                    {e.evidence_id ? (
+                      <Link
+                        href={`/app/${orgSlug}/evidencia/${e.evidence_id}`}
+                        className="hash"
+                        title="Abrir a evidência"
+                      >
+                        {ev?.content_hash ? `${ev.content_hash.slice(0, 22)}…` : "ver evidência"}
+                      </Link>
+                    ) : (
+                      <span className="hash">sem evidência</span>
+                    )}
                   </div>
                 </li>
               );
