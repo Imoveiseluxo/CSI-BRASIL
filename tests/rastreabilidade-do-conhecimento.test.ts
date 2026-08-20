@@ -72,7 +72,7 @@ describe("rastreabilidade do conhecimento", () => {
     ).toEqual([]);
   });
 
-  test("a classe declarada é uma das duas conhecidas", () => {
+  test("a classe declarada é uma das três conhecidas", () => {
     const invalidas = todas()
       .filter((t) => t.classe !== null && !CLASSES.has(t.classe))
       .map((t) => `${t.arquivo}:${t.nome}=${t.classe}`);
@@ -110,20 +110,29 @@ describe("rastreabilidade do conhecimento", () => {
    * ninguém criou policy de UPDATE ou DELETE sobre tabela de evidência — é a
    * mesma regra de `query_versions`, e é o alicerce do Evidence Vault da Fase 7.
    */
-  test("tabela de evidência não recebe policy de UPDATE nem DELETE", () => {
+  test("tabela de evidência não recebe policy de UPDATE, DELETE nem ALL", () => {
     const culpadas: string[] = [];
-    const evidencias = todas()
-      .filter((t) => t.classe === "evidencia")
-      .map((t) => t.nome);
+    const evidencias = new Set(
+      todas()
+        .filter((t) => t.classe === "evidencia")
+        .map((t) => t.nome),
+    );
     for (const { arquivo, sql } of migrations()) {
-      const baixo = sql.toLowerCase();
-      for (const nome of evidencias) {
-        for (const acao of ["update", "delete"]) {
-          const re = new RegExp(
-            `create\\s+policy[\\s\\S]{0,200}?on\\s+public\\.${nome}\\s+for\\s+${acao}`,
-            "i",
-          );
-          if (re.test(baixo)) culpadas.push(`${arquivo}: ${acao} em ${nome}`);
+      // ⚠️ Fatiar por `create policy` em vez de casar com uma janela de N
+      // caracteres. A primeira versão deste teste usava `[\s\S]{0,200}?`, e uma
+      // policy com nome longo ou comentário no meio escapava da checagem — a
+      // trava passaria verde sobre exatamente o que ela existe para impedir.
+      const pedacos = sql
+        .toLowerCase()
+        .split(/create\s+policy/i)
+        .slice(1);
+      for (const pedaco of pedacos) {
+        const alvo = pedaco.match(/\bon\s+(?:public\.)?["']?([a-z_0-9]+)["']?/);
+        if (!alvo || !evidencias.has(alvo[1] as string)) continue;
+        const acao = pedaco.match(/\bfor\s+(all|update|delete|insert|select)\b/);
+        const verbo = acao?.[1] ?? "all"; // `for` ausente no Postgres significa ALL
+        if (verbo === "update" || verbo === "delete" || verbo === "all") {
+          culpadas.push(`${arquivo}: ${verbo} em ${alvo[1]}`);
         }
       }
     }

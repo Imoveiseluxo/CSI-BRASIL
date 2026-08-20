@@ -7,6 +7,68 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 22h25 — revisão de segurança achou um vazamento entre organizações, e ela tinha razão
+
+Uma revisão automática dos commits apontou três achados. **Não aceitei nem descartei de
+cabeça: testei contra o banco.** O primeiro estava certo, e era sério.
+
+### O vazamento — confirmado por teste antes de consertado
+
+As chaves estrangeiras apontavam só para `id`. A RLS confere o `organization_id` **da própria
+linha**, mas nunca verificava se a linha **referenciada** é da mesma organização. Medido com
+um usuário que só pertence à Org A:
+
+```
+grava evidência da Org A apontando fonte da Org B  -> PASSOU
+cria monitor da Org A apontando projeto da Org B   -> PASSOU
+```
+
+**Consequências reais:** procedência corrompida — a evidência declara uma fonte que não é
+sua, e a Fase 7 inteira se apoia nessa declaração — e confirmação da existência de ids
+alheios pelo comportamento da chave estrangeira.
+
+⚠️ **Isto passou pelas duas travas e pela prova de RLS de 21h55.** A prova de lá era honesta e
+continua valendo: ela mediu *"cada um vê só o seu"*. **Não mediu *"cada um só consegue
+apontar para o seu"***. São perguntas diferentes, e eu só tinha feito a primeira.
+
+### O conserto foi no banco, não em policy
+
+`0005_chaves_com_tenant.sql`: unicidade `(id, organization_id)` nas tabelas-pai e **chave
+estrangeira composta** nas filhas.
+
+**Por que composta e não policy:** policy é regra que alguém precisa lembrar de escrever em
+cada tabela nova. Chave composta é **estrutura** — o banco recusa mesmo que a consulta
+esqueça, e **mesmo em rotina com papel de serviço, que ignora RLS**. É a mesma lição do
+projeto anterior: a trava que vale é a que não depende de disciplina.
+
+**Provado com o mesmo teste, resultado invertido:** os dois inserts agora são barrados com
+`23503`.
+
+### O segundo achado: a trava tinha um escape
+
+O teste que proíbe policy de escrita em evidência casava numa **janela de 200 caracteres**
+depois de `create policy`. Uma policy com nome longo escapava — a trava ficaria verde sobre
+exatamente o que existe para impedir.
+
+Reescrito para **fatiar por `create policy`**, sem janela. E, no caminho, apareceu um caso que
+a versão original nem considerava: **policy sem `for` significa `ALL` no Postgres**, o que
+inclui UPDATE e DELETE. Agora é pego.
+
+Ambos provados quebrando: nome longo → vermelho; `for` ausente → vermelho.
+
+### O terceiro achado, e uma honestidade
+
+A notificação truncou o terceiro. **Não sei qual era**, e não vou fingir que tratei. Revendo o
+que escrevi, o candidato mais provável é `sources.endpoint`: é texto livre que a rotina de
+coleta vai **chamar por HTTP**. Endpoint controlável por quem cadastra a fonte é caminho
+clássico para fazer o servidor buscar endereço interno. **Registrado como pendência 21**, para
+resolver na Tarefa 5, quando o conector existir — validar contra lista de destinos
+permitidos, não confiar no campo.
+
+**Verificação:** 16 testes verdes · `tsc` 0 erros · cenários de teste apagados do banco.
+
+---
+
 ## 19/08/2026, 22h15 — Fase 2 começou, e o contrato ganhou uma terceira classe
 
 **Plano da Fase 2 escrito** (`docs/superpowers/plans/2026-08-19-fase-2-primeiro-conector-cnpj.md`),
