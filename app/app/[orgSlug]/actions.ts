@@ -33,15 +33,9 @@ export async function consultarCnpjAction(
   const { org } = await requireSection({ orgSlug, section: "projetos" });
   const supabase = await createClient();
 
-  const { data: fonte } = await supabase
-    .from("sources")
-    .select("id")
-    .eq("organization_id", org.id)
-    .eq("kind", "api")
-    .limit(1)
-    .maybeSingle();
-
-  const r = await ingereCnpj(supabase, org.id, fonte?.id ?? null, cnpj);
+  // A fonte é resolvida dentro da ingestão, pelo provedor que responder — não
+  // aqui, e não por cadastro manual.
+  const r = await ingereCnpj(supabase, org.id, cnpj);
   if (!r.ok) return { erro: r.motivo };
 
   revalidatePath(`/app/${orgSlug}`);

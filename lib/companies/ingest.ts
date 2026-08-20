@@ -26,18 +26,44 @@ type Cliente = SupabaseClient<Database>;
 export async function ingereCnpj(
   supabase: Cliente,
   orgId: string,
-  sourceIdPadrao: string | null,
   cnpjEntrada: string,
 ): Promise<ResultadoIngestao> {
   const coleta = await consultaCnpj(cnpjEntrada);
   if (!coleta.ok) return { ok: false, motivo: coleta.motivo };
 
-  // A fonte do provedor que respondeu. Se ainda não existir cadastrada, usa a
-  // padrão — mas registra qual provedor foi, na própria evidência.
-  const sourceId = sourceIdPadrao;
-  if (!sourceId) {
-    return { ok: false, motivo: "Nenhuma fonte cadastrada para registrar a evidência." };
+  /**
+   * A fonte é resolvida **pelo provedor que de fato respondeu**, e criada se
+   * ainda não existir.
+   *
+   * ⚠️ A primeira versão exigia uma fonte cadastrada à mão e falhava com
+   * "Nenhuma fonte cadastrada" — o dono bateu nisso na primeira consulta. Era
+   * desenho errado: obrigar cadastro manual para algo que o sistema já sabe.
+   *
+   * ⚠️ E resolver pelo provedor **real** não é detalhe: se um dia a consulta cair
+   * para o segundo da lista, a evidência tem que dizer que veio DELE. Uma fonte
+   * genérica "CNPJ" registraria a procedência errada — e procedência errada é
+   * pior que procedência ausente, porque parece confiável.
+   */
+  const { data: fonte, error: erroFonte } = await supabase
+    .from("sources")
+    .upsert(
+      {
+        organization_id: orgId,
+        name: coleta.coleta.provedor.nome,
+        kind: "api",
+        endpoint: new URL(coleta.coleta.url).origin,
+        is_active: true,
+      },
+      { onConflict: "organization_id,name" },
+    )
+    .select("id")
+    .single();
+
+  if (erroFonte || !fonte) {
+    logError("companies.ingest.fonte", erroFonte);
+    return { ok: false, motivo: "Não foi possível registrar a fonte da consulta." };
   }
+  const sourceId = fonte.id;
 
   let empresa: ReturnType<typeof normalizaEmpresa>;
   try {

@@ -7,6 +7,53 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 20/08/2026, 00h15 — "Nenhuma fonte cadastrada": erro de desenho meu, achado no primeiro uso
+
+O dono consultou um CNPJ e recebeu *"Nenhuma fonte cadastrada para registrar a evidência."*
+
+**A mensagem fez o trabalho dela** — disse exatamente onde parou, e eu não precisei de
+nenhuma investigação. É o contraste com o dia inteiro de ontem, onde "Bad Request" e "não foi
+possível completar a operação" custaram horas.
+
+### A causa era desenho, não falha
+
+A ação procurava uma fonte com `kind = 'api'`, e a única cadastrada era a de e-mail
+(`kind = 'feed'`). **Eu exigia cadastro manual de fonte para cada provedor** — obrigando o
+dono a configurar algo que o sistema já sabe.
+
+**Conserto:** a ingestão **resolve a fonte pelo provedor que de fato respondeu**, e a cria se
+não existir.
+
+⚠️ **E resolver pelo provedor real não é detalhe.** Se um dia a consulta cair para o segundo
+da lista, a evidência tem que dizer que veio **dele**. Uma fonte genérica "CNPJ" registraria
+procedência errada — e **procedência errada é pior que ausente, porque parece confiável**.
+
+### A trava, com o que ela protege escrito junto
+
+`tests/ingest-cnpj.test.ts`, 4 casos com banco e rede de mentira:
+
+1. **resolve a fonte sozinha** — não volta a exigir cadastro manual;
+2. **grava a evidência ANTES da empresa**, conferindo a ordem exata das chamadas;
+3. **CNPJ inválido não toca no banco** — nem uma escrita;
+4. **quando a empresa falha, a evidência fica** — ela é verdadeira, e apagá-la para "limpar"
+   destruiria o registro de que a consulta aconteceu.
+
+⚠️ O caso 2 não é estético: empresa gravada antes da evidência, com a evidência falhando,
+deixaria uma empresa apontando para nada. **Procedência que mente.**
+
+### Provado antes de pedir para ele tentar de novo
+
+A rede desta máquina não alcança os provedores, então não dá para rodar a ingestão inteira
+daqui. Mas a peça nova toca o banco, e essa dá: **fiz o `upsert` da fonte com a sessão do
+próprio dono** — que é onde a RLS decide — e voltou **HTTP 201**.
+
+⚠️ **Isso importa como método:** mandar ele testar um conserto não testado transformaria o
+dono em depurador do meu código.
+
+**Verificação:** **69 testes verdes** · `tsc` 0 erros · publicado.
+
+---
+
 ## 20/08/2026, 00h05 — autenticação, a primeira tela real, e um 404 que só a medição achou
 
 **O dono abriu o site e disse "não aparece nada".** Ele estava certo do ponto de vista dele:
