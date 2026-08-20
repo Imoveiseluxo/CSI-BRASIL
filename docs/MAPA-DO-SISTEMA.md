@@ -228,6 +228,8 @@ organizações e dois usuários, cada sessão simulada dentro do banco enxergou
 | `projects` | `configuracao` | `lib/projects/` | o operador, pela tela de projetos (ainda não existe) |
 | `monitors` | `configuracao` | `lib/monitors/` | o operador (ainda não existe) |
 | `query_versions` | `configuracao` | `lib/monitors/` | o operador, **só INSERT** — histórico não se reescreve |
+| `sources` | `configuracao` | `lib/sources/` | o operador, ao ligar uma fonte (tela ainda não existe) |
+| `evidence` | **`evidencia`** | `lib/sources/` | **a rotina de coleta**, `collected_by_kind='rotina'` — **só INSERT** |
 
 ⚠️ **A coluna "quem escreve nela" não é enfeite, e hoje ela está toda em "ainda
 não existe" de propósito.** No projeto anterior, três campos de atendimento

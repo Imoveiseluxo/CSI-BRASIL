@@ -27,7 +27,14 @@ const COLUNAS_DE_PROCEDENCIA = [
   "confidence",
 ] as const;
 
-const CLASSES = new Set(["configuracao", "conhecimento"]);
+const COLUNAS_DE_EVIDENCIA = [
+  "source_id",
+  "collected_at",
+  "content_hash",
+  "collected_by_kind",
+] as const;
+
+const CLASSES = new Set(["configuracao", "evidencia", "conhecimento"]);
 
 type Tabela = { arquivo: string; nome: string; classe: string | null; corpo: string };
 
@@ -83,6 +90,44 @@ describe("rastreabilidade do conhecimento", () => {
       }
     }
     expect(faltando, faltando.join(" | ")).toEqual([]);
+  });
+
+  test("tabela de evidência carrega as colunas de captura", () => {
+    const faltando: string[] = [];
+    for (const t of todas()) {
+      if (t.classe !== "evidencia") continue;
+      for (const coluna of COLUNAS_DE_EVIDENCIA) {
+        if (!new RegExp(`\\b${coluna}\\b`).test(t.corpo)) {
+          faltando.push(`${t.arquivo}:${t.nome} sem ${coluna}`);
+        }
+      }
+    }
+    expect(faltando, faltando.join(" | ")).toEqual([]);
+  });
+
+  /**
+   * ⚠️ Evidência que pode ser reescrita não é evidência. A trava confere que
+   * ninguém criou policy de UPDATE ou DELETE sobre tabela de evidência — é a
+   * mesma regra de `query_versions`, e é o alicerce do Evidence Vault da Fase 7.
+   */
+  test("tabela de evidência não recebe policy de UPDATE nem DELETE", () => {
+    const culpadas: string[] = [];
+    const evidencias = todas()
+      .filter((t) => t.classe === "evidencia")
+      .map((t) => t.nome);
+    for (const { arquivo, sql } of migrations()) {
+      const baixo = sql.toLowerCase();
+      for (const nome of evidencias) {
+        for (const acao of ["update", "delete"]) {
+          const re = new RegExp(
+            `create\\s+policy[\\s\\S]{0,200}?on\\s+public\\.${nome}\\s+for\\s+${acao}`,
+            "i",
+          );
+          if (re.test(baixo)) culpadas.push(`${arquivo}: ${acao} em ${nome}`);
+        }
+      }
+    }
+    expect(culpadas, `evidência com policy de escrita: ${culpadas.join(", ")}`).toEqual([]);
   });
 
   /**

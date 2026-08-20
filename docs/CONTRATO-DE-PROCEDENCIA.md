@@ -10,23 +10,54 @@ conhecimento — descobrir depois significa reescrever o modelo de dados.
 
 ---
 
-## Duas classes de tabela, declaradas explicitamente
+## Três classes de tabela, declaradas explicitamente
+
+> ⚠️ **Eram duas até 19/08/2026.** A terceira apareceu quando a primeira tabela real de dado
+> foi desenhada, na Fase 2 — e é bom que tenha aparecido assim: contrato que nunca encosta
+> num caso real é opinião.
+>
+> A tabela de **evidência** guarda o artefato bruto que a fonte devolveu. Ela não é
+> `configuracao` (não é o que o operador pediu) e não cabia em `conhecimento`: as sete colunas
+> exigem `evidence_id`, e a evidência **é** a evidência — apontaria para si mesma. Também não
+> tem `transform_id`, porque não foi derivada de nada. Foi **capturada**.
+
+## As classes
 
 Toda migration que cria tabela declara a classe numa linha de comentário **imediatamente
 acima** do `create table`:
 
 ```sql
 -- @classe: configuracao
+-- @classe: evidencia
 -- @classe: conhecimento
 ```
 
 **`configuracao`** — registra o que o **operador** pediu: organizações, membros, projetos,
 monitores, versões de consulta, preferências. Descreve o nosso próprio sistema.
 
-**`conhecimento`** — registra o que o sistema **descobriu ou derivou de uma fonte**: documento
-coletado, entidade, relação, fato extraído, evento, evidência, resultado de Transform.
+**`evidencia`** — guarda o artefato **capturado**, cru, do jeito que a fonte devolveu: o JSON
+da resposta, o PDF baixado, o HTML da página. Não interpreta nada.
 
-⚠️ **Não existe terceira opção, e não existe tabela sem classe.** Deixar em branco não é
+**`conhecimento`** — registra o que o sistema **derivou de uma evidência**: entidade, relação,
+fato extraído, evento, resultado de Transform.
+
+### As colunas obrigatórias em `evidencia`
+
+| Coluna | Pergunta que responde |
+|---|---|
+| `source_id` | De qual **fonte** veio? |
+| `collected_at` | **Quando** foi capturado |
+| `content_hash` | **Este artefato mudou desde então?** |
+| `collected_by_kind` | Humano, agente ou rotina capturou? |
+
+⚠️ **`content_hash` é o que separa evidência de cópia.** Sem ele não dá para afirmar que o
+artefato guardado é o mesmo que a fonte devolveu — e a Fase 7 (Evidence Vault, cadeia de
+evidência) depende inteiramente disso.
+
+⚠️ **Tabela de `evidencia` não tem policy de UPDATE nem DELETE.** Mesma regra de
+`query_versions`: evidência que pode ser reescrita não é evidência.
+
+⚠️ **Não existe quarta opção, e não existe tabela sem classe.** Deixar em branco não é
 neutro: é a forma mais comum de uma tabela de conhecimento passar batida. A trava reprova.
 
 ⚠️ **Na dúvida, é `conhecimento`.** O custo de errar para esse lado são colunas a mais numa

@@ -7,6 +7,79 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 22h15 — Fase 2 começou, e o contrato ganhou uma terceira classe
+
+**Plano da Fase 2 escrito** (`docs/superpowers/plans/2026-08-19-fase-2-primeiro-conector-cnpj.md`),
+com uma decisão de fonte que contraria a leitura literal do book — e o porquê registrado.
+
+### A decisão de fonte
+
+O book aponta **Receita Federal — Dados Abertos** como prioritária. Mas os Dados Abertos são
+o **dump completo**: vários gigabytes por mês, dezenas de milhões de estabelecimentos. Como
+**primeiro** conector, ele prova a coisa errada — a fatia inteira iria para infraestrutura de
+carga, sem exercitar procedência, evidência nem busca.
+
+**Decisão: começar por consulta sob demanda** a uma API pública que serve os mesmos dados
+cadastrais da Receita, um CNPJ por chamada. A origem do dado é a mesma; muda o modo de
+acesso. ⚠️ **O dump não sai do roadmap** — volta quando a pergunta for *"quais empresas de tal
+CNAE em tal cidade"*, que consulta sob demanda não responde.
+
+⚠️ **A procedência vai registrar QUAL API respondeu**, não "Receita Federal". Se a
+intermediária estiver desatualizada, a diferença entre *"veio da Receita"* e *"veio da API X
+que diz vir da Receita"* é a diferença entre evidência e suposição.
+
+### O contrato de procedência ganhou uma terceira classe — e foi bom que tenha sido assim
+
+Eram duas: `configuracao` e `conhecimento`. **A primeira tabela real de dado mostrou que
+faltava uma.** A tabela de evidência guarda o artefato bruto: não é o que o operador pediu, e
+não cabia em `conhecimento`, cujas 7 colunas exigem `evidence_id` — a evidência apontaria para
+si mesma. E não tem `transform_id`, porque não foi derivada: foi **capturada**.
+
+Nova classe **`evidencia`**, com 4 colunas próprias: `source_id`, `collected_at`,
+`content_hash`, `collected_by_kind`.
+
+⚠️ **`content_hash` é o que separa evidência de cópia** — é ele que permite afirmar que o
+guardado é o mesmo que a fonte respondeu.
+
+**Contrato que nunca encosta num caso real é opinião.** Este encostou na primeira tentativa e
+mudou — o que é o comportamento certo, não uma falha do contrato original.
+
+### O que entrou
+
+| Arquivo | O que faz |
+|---|---|
+| `CONTRATO-DE-PROCEDENCIA.md` | a terceira classe, com o porquê |
+| `tests/rastreabilidade-do-conhecimento.test.ts` | duas travas novas: colunas de evidência, e **evidência não pode ter policy de UPDATE/DELETE** |
+| `supabase/migrations/0004_fontes_e_evidencias.sql` | `sources` e `evidence`, aplicada no banco |
+
+**As duas travas novas foram provadas quebrando:** evidência sem `content_hash` → vermelho
+nomeando as duas faltas; evidência com `create policy ... for update` → vermelho nomeando a
+policy.
+
+### A prova que fecha a fatia: evidência é imutável de verdade
+
+Não bastava a policy existir. Com um usuário real e sessão simulada (`authenticated`, não
+superusuário — superusuário ignora RLS e o update passaria):
+
+```
+tentativa de ADULTERAR a evidencia -> linhas alteradas: 0
+hash gravado continua: hash-original
+```
+
+⚠️ **E o `update` não devolveu erro nenhum.** Quem conferisse pelo status teria concluído que
+funcionou. É por isso que a conferência conta **linhas afetadas** — a mesma lição que hoje de
+manhã, no outro projeto, separou "campanha enviando" de "campanha queimando lead".
+
+Cenário de teste apagado em seguida: 0 evidências, 0 fontes, 0 usuários.
+
+**Verificação:** **16 testes verdes** · `tsc` 0 erros.
+
+**Falta nesta fase:** validação e normalização de CNPJ (Tarefa 3), a tabela `companies` — a
+primeira `@classe: conhecimento` (Tarefa 4) — e a ingestão que preenche a procedência
+(Tarefa 5).
+
+---
+
 ## 19/08/2026, 21h55 — o banco existe, e a RLS foi PROVADA cortando
 
 **Decisão do dono:** criar o projeto Supabase — na organização **Imoveiseluxo's Org**, depois
