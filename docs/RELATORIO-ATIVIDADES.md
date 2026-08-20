@@ -7,6 +7,57 @@ fim. Vale desde o primeiro commit.
 
 ---
 
+## 19/08/2026, 22h50 — o conector, e a trava que precisava existir antes dele
+
+**Tarefa 5 da Fase 2**, com a decisão do dono incorporada: **todas as fontes gratuitas agora,
+CDL e pagas preparadas para depois**.
+
+### A trava de destino veio primeiro — pendência 21 resolvida
+
+`sources.endpoint` é texto livre, cadastrado por gente, e consumido por uma rotina que faz
+requisição **a partir do servidor**. Servidor alcança o que navegador nunca alcançaria.
+
+⚠️ **Lista de PERMITIDOS, não de proibidos.** Lista de proibidos é corrida que se perde:
+sempre falta uma forma de escrever o mesmo endereço. **11 testes**, e três deles cobrem
+ataques reais:
+
+- **o truque do arroba** — `https://brasilapi.com.br@169.254.169.254/x`, onde o host de
+  verdade é o que vem **depois** do arroba, e é assim que lista mal feita é enganada;
+- **o endereço de metadados de nuvem** (`169.254.169.254`), que entrega credencial da
+  infraestrutura inteira a quem fizer o servidor buscá-lo;
+- **subdomínio parecido** — `brasilapi.com.br.evil.test` **termina** com o host permitido e
+  não é ele.
+
+Quebrei a comparação de igualdade para sufixo, de propósito, e **exatamente o teste do
+subdomínio parecido ficou vermelho**.
+
+⚠️ **E o conector não segue redirecionamento** (`redirect: "error"`). Conferir o destino e
+depois deixar a resposta redirecionar é furar a própria trava — o host de chegada nunca foi
+examinado. Tem teste conferindo que a opção está lá.
+
+### O conector, agnóstico de provedor
+
+`PROVEDORES_CNPJ` com os dois gratuitos, e a decisão registrada no próprio código:
+**acrescentar provedor pago é acrescentar uma linha na lista** e um host nos permitidos. O
+conector, a evidência e a procedência não mudam — porque a procedência guarda **qual provedor
+respondeu**, não "Receita Federal".
+
+**7 testes com `fetch` controlado**, e o mais importante deles não verifica mensagem: verifica
+que **`fetch` não foi chamado** quando o CNPJ é inválido. Cota de fonte não se gasta com
+pergunta que nunca deveria ter sido feita.
+
+Quando todos os provedores falham, o motivo **nomeia cada um e o que respondeu** — não uma
+frase genérica. Foi frase genérica que manteve uma campanha parada dois dias no outro projeto.
+
+⚠️ **O que eu NÃO consegui provar daqui, e não vou afirmar:** a chamada real à internet.
+A saída de rede desta máquina não alcançou o provedor — uma tentativa ficou pendurada dez
+minutos. **O conector está testado na lógica, não contra a fonte viva.** A primeira consulta
+real precisa ser observada, e o resultado registrado aqui.
+
+**Verificação:** **50 testes verdes** · `tsc` 0 erros.
+
+---
+
 ## 19/08/2026, 22h35 — a primeira tabela de conhecimento, e o caminho de procedência fechando
 
 **Tarefas 3 e 4 da Fase 2 concluídas.** O contrato de procedência deixou de ser teoria.
